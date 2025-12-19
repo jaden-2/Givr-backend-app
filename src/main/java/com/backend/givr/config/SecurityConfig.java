@@ -7,6 +7,7 @@ import com.backend.givr.shared.jwt.JwtValidationFilter;
 import com.backend.givr.shared.service.TokenIdService;
 import com.backend.givr.volunteer.security.VolunteerDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -44,6 +45,8 @@ public class SecurityConfig {
     @Autowired
     private TokenIdService tokenIdService;
 
+    @Value("${Givr.allowed.origins}")
+    private List<String> allowedOrigins;
     @Bean
     PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -125,7 +128,7 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration config = new CorsConfiguration();
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        config.setAllowedOrigins(List.of("http://localhost:5174", "http://127.0.0.1:5174", "http://127.0.0.1:5173", "http://localhost:5173"));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", HttpMethod.PATCH.name(), "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
