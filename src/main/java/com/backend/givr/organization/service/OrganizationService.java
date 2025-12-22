@@ -28,7 +28,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class OrganizationService {
@@ -109,6 +112,26 @@ public class OrganizationService {
 
     public OrganizationDashboard getOrganizationDashboard(SecurityDetails details){
         var organization = repo.findById(details.getId()).orElseThrow(()-> new EntityNotFoundException(String.format("Organization withID %s does not exist", details.getId())));
+
+        Map<String, List<ProjectDto>> projectDtoMap = new HashMap<>();
+
+        projectDtoMap.put("activeProjects", mapper.toDtos(organization.getProjects()
+                .stream()
+                .filter(project -> project.getStatus() == ProjectStatus.COMPLETED)
+                .toList()));
+
+        projectDtoMap.put("draftProjects", mapper.toDtos(
+                organization.getProjects()
+                        .stream()
+                        .filter(project -> project.getStatus() == ProjectStatus.DRAFT)
+                        .toList()
+        ));
+        projectDtoMap.put("ongoingProjects", mapper.toDtos(
+                organization.getProjects()
+                        .stream()
+                        .filter(project -> project.getStatus() == ProjectStatus.DRAFT)
+                        .toList()
+        ));
         return new OrganizationDashboard(organization.getOrganizationName(), mapper.toDtos(organization.getProjects()));
     }
 
