@@ -24,8 +24,8 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String token;
     SecretKey secretKey;
-    public static Duration ACCESSEXPIRATION = Duration.ofMinutes(60);// 15 minutes
-    public static Duration REFRESHEXPIRATION = Duration.ofDays(1); // 24 hours
+    public static Duration ACCESSEXPIRATION = Duration.ofMinutes(15);// 15 minutes
+    public static Duration REFRESHEXPIRATION = Duration.ofHours(4); // 4 hours
     public static String generateJti(){
         return UUID.randomUUID().toString();
     }
@@ -57,14 +57,12 @@ public class JwtUtil {
                 .getSubject();
     }
     public String extractRoles(String token) throws JsonProcessingException {
-        String role = Jwts.parser()
+        return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("role", String.class);
-
-        return role;
     }
 
     public String extractUserId(String token){

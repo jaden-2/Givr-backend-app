@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.text.ParseException;
+
 @RestControllerAdvice
 public class ControllerAdviser {
     @ExceptionHandler(EntityNotFoundException.class)
@@ -37,5 +39,10 @@ public class ControllerAdviser {
     @ExceptionHandler(InconsistentProjectDatesException.class)
     public ResponseEntity<String> handleInconsistentProjectDateException(InconsistentProjectDatesException e){
         return ResponseEntity.badRequest().body(e.getLocalizedMessage());
+    }
+
+    @ExceptionHandler(value = ParseException.class)
+    public ResponseEntity<String> handleParseException(ParseException e){
+        return ResponseEntity.unprocessableEntity().body(String.format("Incompatible date format, expected format yyyy-MM-dd. %s", e.getLocalizedMessage()));
     }
 }

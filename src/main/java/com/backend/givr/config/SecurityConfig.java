@@ -7,6 +7,7 @@ import com.backend.givr.shared.jwt.JwtValidationFilter;
 import com.backend.givr.shared.service.TokenIdService;
 import com.backend.givr.volunteer.security.VolunteerDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -43,6 +44,8 @@ public class SecurityConfig {
     private JwtUtil jwtUtil;
     @Autowired
     private TokenIdService tokenIdService;
+    @Value("${api.version}")
+    private String apiVersion;
 
     @Bean
     PasswordEncoder passwordEncoder(){
@@ -64,7 +67,7 @@ public class SecurityConfig {
     @Bean
     @Order(0)
     SecurityFilterChain volunteerSecurityFilter(HttpSecurity httpSecurity) throws Exception {
-        JwtAuthenticationFilter authFilter = new JwtAuthenticationFilter(jwtUtil, volunteerAuthManager(volunteerDetailsService), tokenIdService);
+        JwtAuthenticationFilter authFilter = new JwtAuthenticationFilter(jwtUtil, volunteerAuthManager(volunteerDetailsService), tokenIdService, apiVersion);
         authFilter.setFilterProcessesUrl("/v1/api/volunteer/auth/login");
         JwtValidationFilter validationFilter = new JwtValidationFilter(jwtUtil, volunteerDetailsService, organizationDetailsService);
 
@@ -87,7 +90,7 @@ public class SecurityConfig {
     @Bean
     @Order(1)
     SecurityFilterChain organizationSecurityFilter(HttpSecurity httpSecurity) throws Exception {
-        JwtAuthenticationFilter authFilter = new JwtAuthenticationFilter(jwtUtil, organizationAuthManager(organizationDetailsService), tokenIdService);
+        JwtAuthenticationFilter authFilter = new JwtAuthenticationFilter(jwtUtil, organizationAuthManager(organizationDetailsService), tokenIdService, apiVersion);
         authFilter.setFilterProcessesUrl("/v1/api/organization/auth/login");
         JwtValidationFilter validationFilter = new JwtValidationFilter(jwtUtil, volunteerDetailsService, organizationDetailsService);
 

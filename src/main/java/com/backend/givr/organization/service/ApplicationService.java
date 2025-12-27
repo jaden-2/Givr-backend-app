@@ -1,5 +1,6 @@
 package com.backend.givr.organization.service;
 
+import com.backend.givr.organization.dtos.ApplicationStats;
 import com.backend.givr.organization.entity.Organization;
 import com.backend.givr.organization.entity.Project;
 import com.backend.givr.organization.entity.ProjectApplication;
@@ -16,8 +17,11 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -28,9 +32,13 @@ public class ApplicationService {
     private ProjectApplicationRepo repo;
     @PersistenceContext
     private EntityManager em;
+
+    @Autowired
+    private ParticipationService participationService;
+
     public ProjectApplication apply(Volunteer volunteer, ProjectApplicationForm applicationForm){
         Project project = em.getReference(Project.class, applicationForm.projectId());
-        if(project.getEndDate().before(Date.from(Instant.now())))
+        if(LocalDateTime.now().isAfter(project.getDeadline().atTime(23, 59, 59)))
             throw new ProjectDeadlinePastException("Cannot apply for a project past it's application period");
 
         var application = new ProjectApplication(project, volunteer);
@@ -57,6 +65,7 @@ public class ApplicationService {
         repo.save(application);
     }
 
+    @Transactional
     public void changeApplicationStatus(Long applicationId, ApplicationStatus status){
         if(applicationId==null)
             throw new IllegalArgumentException("Null values are not accepted");
@@ -69,7 +78,12 @@ public class ApplicationService {
 
         if(status == ApplicationStatus.APPLIED)
             throw new IllegalOperationException("Cannot change status to applied");
+
+        if(status == ApplicationStatus.APPROVED)
+            participationService.createParticipation(project, application.getVolunteer());
+
         application.setStatus(status);
+
         repo.save(application);
     }
 
@@ -86,4 +100,11 @@ public class ApplicationService {
         return repo.findAllByOrganizationAndStatus(organization, ApplicationStatus.APPLIED).stream().map(VolunteerApplicationDto::new).toList();
     }
 
+    public ApplicationStats getVolunteerStats(Organization organization){
+        int approved = repo.countByStatus(ApplicationStatus.APPLIED);
+        int applied = repo.countByStatus(ApplicationStatus.APPLIED);
+        int rejected = repo.countByStatus(ApplicationStatus.REJECTED);
+
+        return new ApplicationStats(applied, approved, rejected);
+    }
 }

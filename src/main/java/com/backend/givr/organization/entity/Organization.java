@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.validator.constraints.URL;
@@ -21,6 +22,7 @@ import java.util.Set;
 @Getter
 @ToString
 @Setter
+@NoArgsConstructor
 public class Organization {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -62,11 +64,8 @@ public class Organization {
     private VerificationStatus status;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "organization", orphanRemoval = true, cascade = CascadeType.ALL)
-    private final Set<Project> projects;
+    private Set<Project> projects;
 
-    public Organization(){
-        this.projects = new HashSet<>();
-    }
 
     public void addProject(Project project){
         project.setStatus(ProjectStatus.DRAFT);
@@ -75,7 +74,11 @@ public class Organization {
     }
     //    Get recently created projects
     public List<Project> getProjects(){
-        return this.projects.stream().sorted(Comparator.comparingInt(p -> p.getCreatedAt().getNano())).toList();
+        return this.projects.stream().sorted(Comparator.comparing(Project::getCreatedAt)).toList();
     }
 
+    @Transient
+    public int getNumOfActiveProjects(){
+        return projects == null? 0: projects.stream().filter(p->p.getStatus()==ProjectStatus.OPEN || p.getStatus() == ProjectStatus.ONGOING).toList().size();
+    }
 }

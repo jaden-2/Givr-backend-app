@@ -19,7 +19,6 @@ import java.util.List;
 public class VolunteerDetails implements SecurityDetails {
     @Id
     @Email(message = "Invalid email format")
-
     private String email;
     private String password;
     private Collection<GrantedAuthority> roles = List.of(new SimpleGrantedAuthority("VOLUNTEER"));

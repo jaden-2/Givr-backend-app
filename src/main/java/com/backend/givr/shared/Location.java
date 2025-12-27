@@ -1,5 +1,6 @@
 package com.backend.givr.shared;
 
+import com.backend.givr.organization.dtos.LocationDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,4 +18,9 @@ public class Location {
 
     private String state;
     private String lga;
+
+    public Location(LocationDto locationDto){
+        this.state = locationDto.getState();
+        this.lga = locationDto.getLga();
+    }
 }

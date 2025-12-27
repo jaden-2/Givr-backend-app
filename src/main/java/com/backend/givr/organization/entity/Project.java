@@ -5,7 +5,6 @@ import com.backend.givr.shared.Skill;
 import com.backend.givr.shared.enums.ProjectStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,9 +12,9 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -32,7 +31,6 @@ public class Project {
     @JoinColumn(name = "organization_id")
     private Organization organization;
 
-    @NotBlank
     @Column(nullable = false, unique = true)
     private String title;
     @Column(nullable = false)
@@ -51,14 +49,14 @@ public class Project {
     private Location location;
 
     @Column(nullable = false)
-    private Date startDate;
+    private LocalDate startDate;
     @Column(nullable = false)
-    private Date endDate;
+    private LocalDate endDate;
     @Column(nullable = false)
-    private Date deadline;
-    @Column(nullable = false)
-    @NotBlank
-    private String attendanceHours;
+    private LocalDate deadline;
+
+    @Embedded
+    private AttendanceHours attendanceHours;
 
     @Enumerated(EnumType.STRING)
     private ProjectStatus status;
@@ -81,10 +79,15 @@ public class Project {
 
     @PrePersist
     private void setCreatedAt(){
-        this.createdAt = ZonedDateTime.now();
+        this.createdAt = ZonedDateTime.now(ZoneOffset.UTC);
     }
     @PreUpdate
     private void setModifiedAt(){
-        this.modifiedAt = ZonedDateTime.now();
+        this.modifiedAt = ZonedDateTime.now(ZoneOffset.UTC);
+    }
+
+    @Transient
+    public int getVolunteerCount(){
+        return approvedList==null? 0 : approvedList.size();
     }
 }

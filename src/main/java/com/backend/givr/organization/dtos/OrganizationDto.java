@@ -23,7 +23,7 @@ public class OrganizationDto {
     @NotBlank
     private String name;
 
-    private List<ProjectDto> activeProjects;
+    private int numOfActiveProjects;
 
     @NotBlank
     private String category;

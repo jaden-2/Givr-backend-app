@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +27,11 @@ public class Volunteer {
     @ManyToOne
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
+
+    private Boolean emailIsVerified = false;
+    private Boolean phoneIsVerified = false;
+    private URL profileUrl;
+    private double rating = 0.0;
 
     @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(name = "volunteer_skills", joinColumns = @JoinColumn(name = "volunteer_id"), inverseJoinColumns = @JoinColumn(name = "skill_id"))

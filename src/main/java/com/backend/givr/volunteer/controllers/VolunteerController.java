@@ -1,15 +1,18 @@
 package com.backend.givr.volunteer.controllers;
 
 import com.backend.givr.organization.dtos.OrganizationDto;
-import com.backend.givr.organization.dtos.ProjectDto;
-import com.backend.givr.organization.service.ApplicationService;
+import com.backend.givr.organization.dtos.ProjectResponseDto;
+import com.backend.givr.organization.entity.Participation;
 import com.backend.givr.organization.service.OrganizationService;
+import com.backend.givr.organization.service.ParticipationService;
 import com.backend.givr.organization.service.ProjectService;
+import com.backend.givr.shared.ParticipationDto;
 import com.backend.givr.shared.ProjectApplicationForm;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.volunteer.dtos.CreateVolunteerRequestDto;
 import com.backend.givr.volunteer.dtos.VolunteerDashboard;
 import com.backend.givr.volunteer.dtos.VolunteerProfile;
+import com.backend.givr.volunteer.entity.Volunteer;
 import com.backend.givr.volunteer.security.VolunteerDetails;
 import com.backend.givr.volunteer.service.VolunteerService;
 import jakarta.validation.Valid;
@@ -22,12 +25,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/api/volunteer")
+@RequestMapping("/${api.version}/api/volunteer")
 public class VolunteerController {
     @Autowired
     private VolunteerService service;
     @Autowired
     private OrganizationService organizationService;
+
+    @Autowired
+    private ParticipationService participationService;
 
     @Autowired
     private ProjectService projectService;
@@ -46,17 +52,25 @@ public class VolunteerController {
     public ResponseEntity<VolunteerProfile> getVolunteerProfile(@AuthenticationPrincipal SecurityDetails volunteerDetails){
         return ResponseEntity.ok(service.getVolunteerProfile(volunteerDetails.getId()));
     }
+
     @PostMapping("/projects/apply")
     public ResponseEntity<Void> applyForProject(@AuthenticationPrincipal VolunteerDetails volunteerDetails, @RequestBody @Valid ProjectApplicationForm applicationForm){
         service.apply(volunteerDetails.getId(), applicationForm);
         return ResponseEntity.ok().build();
     }
+
     @GetMapping("/projects")
-    public ResponseEntity<List<ProjectDto>> getAvailableProjects(){
+    public ResponseEntity<List<ProjectResponseDto>> getAvailableProjects(){
         return ResponseEntity.ok(projectService.getAllProjectsForVolunteer());
     }
+
     @GetMapping("/organizations")
     public ResponseEntity<List<OrganizationDto>> getOrganizationDtoResponseEntity(){
         return ResponseEntity.ok(organizationService.getOrganizations());
+    }
+
+    @GetMapping("/volunteering")
+    public ResponseEntity<List<ParticipationDto>> getMyVolunteering(@AuthenticationPrincipal SecurityDetails details){
+        return ResponseEntity.ok(service.getMyVolunteering(details));
     }
 }

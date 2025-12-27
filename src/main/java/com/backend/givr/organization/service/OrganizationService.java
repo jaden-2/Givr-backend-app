@@ -1,15 +1,10 @@
 package com.backend.givr.organization.service;
 
-import com.backend.givr.organization.dtos.CreateOrganizationDto;
-import com.backend.givr.organization.dtos.OrganizationDashboard;
-import com.backend.givr.organization.dtos.OrganizationDto;
-import com.backend.givr.organization.dtos.ProjectDto;
+import com.backend.givr.organization.dtos.*;
 import com.backend.givr.organization.entity.Organization;
 import com.backend.givr.organization.entity.Project;
-import com.backend.givr.organization.entity.ProjectApplication;
 import com.backend.givr.organization.mappings.OrganizationMapper;
 import com.backend.givr.organization.repo.OrganizationRepo;
-import com.backend.givr.organization.repo.ProjectRepo;
 import com.backend.givr.organization.security.OrganizationDetails;
 import com.backend.givr.organization.security.OrganizationDetailsService;
 import com.backend.givr.shared.VolunteerApplicationDto;
@@ -18,6 +13,7 @@ import com.backend.givr.shared.enums.ProjectStatus;
 import com.backend.givr.shared.enums.VerificationStatus;
 import com.backend.givr.shared.exceptions.DuplicateAccountException;
 import com.backend.givr.shared.interfaces.SecurityDetails;
+import com.backend.givr.shared.mapper.ProjectMapper;
 import com.backend.givr.shared.service.LocationService;
 import com.backend.givr.shared.service.SkillService;
 import jakarta.persistence.EntityManager;
@@ -28,15 +24,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class OrganizationService {
     @Autowired
     private OrganizationMapper mapper;
+    @Autowired
+    private ProjectMapper projectMapper;
     @Autowired
     private OrganizationRepo repo;
     @Autowired
@@ -74,8 +72,8 @@ public class OrganizationService {
     }
 
     @Transactional
-    public ProjectDto createProject(ProjectDto projectDto, SecurityDetails details){
-        if(projectDto == null)
+    public List<ProjectResponseDto> createProject(ProjectRequestDto projectRequestDto, SecurityDetails details){
+        if(projectRequestDto == null)
             throw new IllegalArgumentException("Null project DTO null accepted");
 
         var organization = repo.findById(details.getId());
@@ -83,12 +81,12 @@ public class OrganizationService {
             throw new EntityNotFoundException("Failed to fetch organization");
         Organization org = organization.get();
 
-        Project project = projectService.createProject(projectDto, org);
+        Project project = projectService.createProject(projectRequestDto, org);
 
-//        org.addProject(project);
-//        repo.save(org);
+        //        org.addProject(project);
+        //        repo.save(org);
 
-        return mapper.toProjectDTO(project);
+        return projectMapper.toDtos(projectService.getOrganizationProjects(org));
     }
 
     public void approveApplication(Long applicationId){
@@ -106,40 +104,63 @@ public class OrganizationService {
 
     public void publishProject(Long projectId){
         Project project = projectService.findProjectById(projectId);
-        project.setStatus(ProjectStatus.PENDING);
+        project.setStatus(ProjectStatus.OPEN);
         projectService.save(project);
     }
 
     public OrganizationDashboard getOrganizationDashboard(SecurityDetails details){
         var organization = repo.findById(details.getId()).orElseThrow(()-> new EntityNotFoundException(String.format("Organization withID %s does not exist", details.getId())));
 
-        Map<String, List<ProjectDto>> projectDtoMap = new HashMap<>();
+        Map<String, List<ProjectResponseDto>> projectDtoMap = new HashMap<>();
 
-        projectDtoMap.put("activeProjects", mapper.toDtos(organization.getProjects()
+        projectDtoMap.put("draftProjects", projectMapper.toDtos(
+                organization.getProjects()
+                        .stream()
+                        .filter(project -> project.getStatus() == ProjectStatus.DRAFT)
+                        .toList()
+        ));
+
+        projectDtoMap.put("openProjects", projectMapper.toDtos(
+                organization.getProjects()
+                        .stream()
+                        .filter(project -> project.getStatus() == ProjectStatus.OPEN)
+                        .sorted(Comparator.comparing(Project::getCreatedAt))
+                        .toList()
+        ));
+
+
+        projectDtoMap.put("ongoingProjects", projectMapper.toDtos(
+                organization.getProjects()
+                        .stream()
+                        .filter(project -> project.getStatus() == ProjectStatus.ONGOING)
+                        .sorted(Comparator.comparing(Project::getCreatedAt))
+                        .toList()
+        ));
+
+        projectDtoMap.put("completedProjects", projectMapper.toDtos(organization.getProjects()
                 .stream()
                 .filter(project -> project.getStatus() == ProjectStatus.COMPLETED)
+                .sorted(Comparator.comparing(Project::getCreatedAt))
                 .toList()));
 
-        projectDtoMap.put("draftProjects", mapper.toDtos(
-                organization.getProjects()
-                        .stream()
-                        .filter(project -> project.getStatus() == ProjectStatus.DRAFT)
-                        .toList()
-        ));
-        projectDtoMap.put("ongoingProjects", mapper.toDtos(
-                organization.getProjects()
-                        .stream()
-                        .filter(project -> project.getStatus() == ProjectStatus.DRAFT)
-                        .toList()
-        ));
-        return new OrganizationDashboard(organization.getOrganizationName(), mapper.toDtos(organization.getProjects()));
+        ApplicationStats stats = applicationService.getVolunteerStats(organization);
+        return new OrganizationDashboard(organization.getOrganizationName(), projectDtoMap, 5.0, stats);
     }
 
     public List<Project> getProjects(SecurityDetails details){
         return projectService.getOrganizationProjects(em.getReference(Organization.class, details.getId()));
     }
 
+    @Transactional
+    public ProjectResponseDto updateProject(Long projectId, ProjectRequestDto projectRequestDto) {
+        return projectMapper.toProjectDto(projectService.updateProject(projectId, projectRequestDto));
+    }
     public List<OrganizationDto> getOrganizations() {
         return mapper.toOrganizationDtoList(repo.findAll());
+    }
+
+    public void deleteProject(Long projectId, String organizationId) {
+        Organization organization = em.getReference(Organization.class, organizationId);
+        projectService.deleteProject(projectId, organization);
     }
 }

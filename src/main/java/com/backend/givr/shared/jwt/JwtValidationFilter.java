@@ -1,6 +1,7 @@
 package com.backend.givr.shared.jwt;
 
 import com.backend.givr.organization.security.OrganizationDetailsService;
+import com.backend.givr.shared.exceptions.InvalidTokenException;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.volunteer.security.VolunteerDetailsService;
 import io.jsonwebtoken.JwtException;
@@ -56,12 +57,17 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
                     UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(token);
+                }else{
+                    throw new InvalidTokenException("Invalid token");
                 }
+            }else{
+                throw new IllegalArgumentException("Request does not contain the right credentials");
             }
-            filterChain.doFilter(request, response);
-        } catch (JwtException e){
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Expired or Invalid token");
-        }
 
+        } catch (JwtException | InvalidTokenException | IllegalArgumentException e){
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getLocalizedMessage());
+            return;
+        }
+        filterChain.doFilter(request, response);
     }
 }

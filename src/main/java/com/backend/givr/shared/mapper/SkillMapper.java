@@ -5,6 +5,6 @@ import com.backend.givr.shared.SkillDto;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface SharedMapper {
+public interface SkillMapper {
     SkillDto toSkillDto(Skill skill);
 }

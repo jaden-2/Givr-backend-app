@@ -26,11 +26,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final TokenIdService tokenService;
     private final AuthenticationManager authManager;
 
+    private final String apiVersion;
+
     //private final CreatorService creatorService;
-    public JwtAuthenticationFilter(JwtUtil service, AuthenticationManager authManager, TokenIdService tokenService){
+    public JwtAuthenticationFilter(JwtUtil service, AuthenticationManager authManager, TokenIdService tokenService, String apiVersion){
         this.jwtUtil = service;
         this.authManager = authManager;
         this.tokenService = tokenService;
+        this.apiVersion = apiVersion;
     }
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
@@ -65,9 +68,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                         .build();
 
         ResponseCookie refreshCookie = ResponseCookie.from("RefreshToken").value(refreshToken)
-                                        .path("/auth")
+                                        .path(String.format("/%s/api/auth", apiVersion))
                                         .maxAge(JwtUtil.REFRESHEXPIRATION)
-                                        .sameSite(Cookie.SameSite.NONE.attributeValue())
+                                        .sameSite(Cookie.SameSite.STRICT.attributeValue())
                                         .httpOnly(true)
                                         .secure(true)
                                         .build();

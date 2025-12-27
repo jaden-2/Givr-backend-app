@@ -2,8 +2,12 @@ package com.backend.givr.volunteer.service;
 
 import com.backend.givr.organization.entity.ProjectApplication;
 import com.backend.givr.organization.service.ApplicationService;
+import com.backend.givr.organization.service.ParticipationService;
 import com.backend.givr.shared.Location;
+import com.backend.givr.shared.ParticipationDto;
 import com.backend.givr.shared.ProjectApplicationForm;
+import com.backend.givr.shared.interfaces.SecurityDetails;
+import com.backend.givr.shared.mapper.ProjectMapper;
 import com.backend.givr.shared.repo.SkillRepo;
 import com.backend.givr.shared.service.LocationService;
 import com.backend.givr.shared.service.SkillService;
@@ -39,6 +43,8 @@ public class VolunteerService {
     private VolunteerMapper mapper;
 
     @Autowired
+    private ProjectMapper projectMapper;
+    @Autowired
     private ApplicationService applicationService;
 
     @Autowired
@@ -48,6 +54,9 @@ public class VolunteerService {
     private SkillService skillService;
     @Autowired
     private LocationService locationService;
+    @Autowired
+    private ParticipationService participationService;
+
     @Autowired
     private SkillRepo skillRepo;
     @PersistenceContext
@@ -71,7 +80,7 @@ public class VolunteerService {
         Volunteer volunteer = manager.getReference(Volunteer.class, volunteerId);
         List<ProjectApplication> applications = applicationService.getAppliedProjects(volunteer);
 
-        return new VolunteerDashboard(volunteer.getFirstname(), applications);
+        return new VolunteerDashboard(volunteer.getFirstname(), projectMapper.toApplicationsDto(applications));
     }
 
     public VolunteerProfile getVolunteerProfile(String volunteerId){
@@ -113,5 +122,10 @@ public class VolunteerService {
     public void apply(String id, @Valid ProjectApplicationForm applicationForm) {
         Volunteer volunteer = manager.getReference(Volunteer.class, id);
         applicationService.apply(volunteer, applicationForm);
+    }
+
+    public List<ParticipationDto> getMyVolunteering(SecurityDetails details){
+        Volunteer volunteer = manager.getReference(Volunteer.class, details.getId());
+        return projectMapper.toParticipationDto(participationService.getVolunteerParticipation(volunteer));
     }
 }

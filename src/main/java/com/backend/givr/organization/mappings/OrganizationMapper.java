@@ -6,62 +6,27 @@ import com.backend.givr.organization.entity.Project;
 import com.backend.givr.organization.entity.ProjectApplication;
 import com.backend.givr.shared.Location;
 import com.backend.givr.shared.Skill;
-import com.backend.givr.shared.mapper.SharedMapper;
+import com.backend.givr.shared.mapper.SkillMapper;
 import com.backend.givr.volunteer.mappings.VolunteerMapper;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
-@Mapper(componentModel = "spring", uses = {VolunteerMapper.class, SharedMapper.class})
+@Mapper(componentModel = "spring", uses = {VolunteerMapper.class, SkillMapper.class})
 public interface OrganizationMapper {
 
     Organization toOrganization(CreateOrganizationDto organizationDto);
 
-    @Mapping(target = "requiredSkills",ignore = true)
-    @Mapping(target = "startDate", ignore = true)
-    @Mapping(target = "endDate", ignore = true)
-    @Mapping(target = "deadline", ignore = true)
-    @Mapping(target = "category", ignore = true)
-    Project toProject (ProjectDto projectDto);
 
     @AfterMapping
-    default void updateCategory(ProjectDto projectDto, @MappingTarget Project project){
-        project.setCategory(projectDto.getCategories().getFirst());
-    }
-
-    @Mapping(target = "requiredSkills", ignore = true)
-    @Mapping(target = "id", source = "projectId")
-    @Mapping(source = "deadline", target = "applicationDeadline")
-    @Mapping(target = "categories", ignore = true)
-    ProjectDto toProjectDTO (Project project);
-
-    @AfterMapping
-    default void updateCategory(Project project, @MappingTarget ProjectDto projectDto){
-        projectDto.setCategories(List.of(project.getCategory()));
-    }
-
-    @AfterMapping
-    default void mapDates(ProjectDto projectDto, @MappingTarget Project project) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-        try{
-            project.setStartDate(formatter.parse(projectDto.getStartDate()));
-            project.setDeadline(formatter.parse(projectDto.getApplicationDeadline()));
-            project.setEndDate(formatter.parse(projectDto.getEndDate()));
-        }catch (ParseException e){
-            System.out.println(e.getLocalizedMessage());
-        }
-    }
-
-    @AfterMapping
-    default void mapSkills(Project project, @MappingTarget ProjectDto dto){
-        dto.setRequiredSkills(project.getRequiredSkills().stream().map(Skill::toString).toList());
+    default void updateVolunteerAndOrganization(Project project, @MappingTarget ProjectResponseDto projectDto){
+        projectDto.setTotalApplicants(project.getVolunteerCount());
     }
 
     @Mapping(target = "id", source = "organizationId")
@@ -69,11 +34,21 @@ public interface OrganizationMapper {
     @Mapping(target = "category", source = "organizationType")
     OrganizationDto toOrganizationDto (Organization organization);
 
+    @AfterMapping
+    default void updateActiveProjectCount(Organization organization, @MappingTarget OrganizationDto organizationDto){
+        organizationDto.setNumOfActiveProjects(organization.getNumOfActiveProjects());
+    }
+
     List<OrganizationDto> toOrganizationDtoList (List<Organization> organizations);
-    List<ProjectDto> toDtos(List<Project> projects);
 
     LocationDto toLocationDto (Location location);
 
-    ProjectApplicationDto toApplicationDto(ProjectApplication application);
-    List<ProjectApplicationDto> toApplicationsDto(List<ProjectApplication> application);
+
+    default Date toDate(String date)throws ParseException{
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        return format.parse(date);
+    }
+    default Set<Skill> toSet(List<Skill> skills){
+        return Set.copyOf(skills);
+    }
 }
