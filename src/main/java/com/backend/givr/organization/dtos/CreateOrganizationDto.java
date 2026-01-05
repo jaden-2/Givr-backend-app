@@ -37,7 +37,6 @@ public class CreateOrganizationDto {
     private Identification identification;
     private String address;
 
-    @NotBlank
     private Location location;
 
     private String description;

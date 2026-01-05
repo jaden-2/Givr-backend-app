@@ -28,18 +28,18 @@ public class Organization {
     private String organizationId;
 
     @NotBlank
+    @Column(nullable = false)
     private String contactFirstname;
 
     private String contactMiddleName;
     @NotBlank
+    @Column(nullable = false)
     private String contactLastname;
 
     @NotBlank
     @Column(nullable = false)
     private String phoneNumber;
 
-    @NotBlank
-    @Column(nullable = false)
     private String organizationName;
 
     private String organizationType;
@@ -50,7 +50,6 @@ public class Organization {
     @Embedded
     private Identification identification;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
