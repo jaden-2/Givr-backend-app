@@ -8,11 +8,14 @@ import com.backend.givr.organization.repo.ProjectRepo;
 import com.backend.givr.shared.Location;
 import com.backend.givr.shared.enums.ProjectStatus;
 import com.backend.givr.shared.exceptions.IllegalOperationException;
+import com.backend.givr.shared.exceptions.InconsistentProjectDatesException;
 import com.backend.givr.shared.mapper.ProjectMapper;
 import com.backend.givr.shared.service.LocationService;
 import com.backend.givr.shared.service.SkillService;
+import com.backend.givr.volunteer.entity.Volunteer;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +49,6 @@ public class ProjectService {
                 })
                 .sorted(Comparator.comparing(Project::getCreatedAt))
                 .toList();
-
         return mapper.toDtos(result);
     }
 
@@ -56,8 +58,8 @@ public class ProjectService {
 
     private void handleProject(Project project, ProjectRequestDto projectRequestDto){
         // Verify application date are valid
-//        if(!projectDatesValid(project))
-//            throw new InconsistentProjectDatesException("Cannot start or end a project before current date. Application deadline must be before the project's start date and the project's start date must be before its end date");
+        if(!projectDatesValid(project))
+            throw new InconsistentProjectDatesException("Cannot start or end a project before current date. Application deadline must be before the project's start date and the project's start date must be before its end date");
 
         project.setStatus(ProjectStatus.DRAFT);
         Location savedLocation = locationService.createLocation(projectRequestDto.getLocation());
@@ -83,8 +85,8 @@ public class ProjectService {
         return repo.save(project);
     }
     private boolean projectDatesValid(Project project){
-        var startDateBeforeNow = project.getStartDate().isBefore(LocalDate.now());
-        var endDateBeforeNow = project.getEndDate().isBefore(LocalDate.now());
+        var startDateBeforeNow = project.getStartDate().isBefore(LocalDate.now(ZoneId.of("Africa/Lagos")));
+        var endDateBeforeNow = project.getEndDate().isBefore(LocalDate.now(ZoneId.of("Africa/Lagos")));
         var deadlineBeforeStart = project.getDeadline().isBefore(project.getStartDate());
         var startBeforeEndDate = project.getStartDate().isBefore(project.getEndDate());
 
@@ -104,5 +106,21 @@ public class ProjectService {
         if(project.getStatus() != ProjectStatus.DRAFT && project.getStatus() != ProjectStatus.OPEN)
             throw new IllegalOperationException("Only DRAFT or OPEN projects can be deleted");
         repo.delete(project);
+    }
+
+    @Scheduled(cron = "0 0 1 * * *", zone = "Africa/Lagos")
+    @Transactional
+    public void updateProjectStatusOnDeadline(){
+        LocalDate today = LocalDate.now(ZoneId.of("Africa/Lagos"));
+        List<Project> projects = repo.findExpiredProjects(today.atStartOfDay());
+
+        projects.forEach(project -> {
+            if(project.shouldClose(today.atStartOfDay()))
+                project.closeApplication();
+        });
+    }
+
+    public List<Project> getVolunteerRecommendedProjects(Volunteer volunteer, ProjectStatus status){
+        return repo.findProjectsWithAnyMatchingSkill(volunteer, volunteer.getLocation().getState(),status);
     }
 }

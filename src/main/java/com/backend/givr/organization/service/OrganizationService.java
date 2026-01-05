@@ -7,13 +7,14 @@ import com.backend.givr.organization.mappings.OrganizationMapper;
 import com.backend.givr.organization.repo.OrganizationRepo;
 import com.backend.givr.organization.security.OrganizationDetails;
 import com.backend.givr.organization.security.OrganizationDetailsService;
-import com.backend.givr.shared.VolunteerApplicationDto;
-import com.backend.givr.shared.enums.ApplicationStatus;
-import com.backend.givr.shared.enums.ProjectStatus;
-import com.backend.givr.shared.enums.VerificationStatus;
+import com.backend.givr.shared.dtos.VolunteerApplicationDto;
+import com.backend.givr.shared.email.EmailService;
+import com.backend.givr.shared.enums.*;
 import com.backend.givr.shared.exceptions.DuplicateAccountException;
+import com.backend.givr.shared.exceptions.IllegalOperationException;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.shared.mapper.ProjectMapper;
+import com.backend.givr.shared.otp.OTPService;
 import com.backend.givr.shared.service.LocationService;
 import com.backend.givr.shared.service.SkillService;
 import jakarta.persistence.EntityManager;
@@ -24,10 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class OrganizationService {
@@ -49,7 +47,10 @@ public class OrganizationService {
     private PasswordEncoder encoder;
     @Autowired
     private LocationService locationService;
-
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private OTPService otpService;
     @Autowired
     private EntityManager em;
 
@@ -59,8 +60,13 @@ public class OrganizationService {
             throw new IllegalArgumentException("Organization DTO cannot be null");
         }
         Organization organization = mapper.toOrganization(organizationDto);
+
+        organization.setProfileCompleted(!orgProfileNotComplete(organization));
+
         organization.setLocation(locationService.createLocation(organization.getLocation()));
         organization.setStatus(VerificationStatus.UNVERIFIED);
+        organization.setEmailVerified(false);
+
         try{
             var savedOrganization = repo.save(organization);
             OrganizationDetails details = new OrganizationDetails(organizationDto.getEmail(), encoder.encode(organizationDto.getPassword()), savedOrganization);
@@ -71,6 +77,10 @@ public class OrganizationService {
         }
     }
 
+    private boolean orgProfileNotComplete(Organization organization){
+        return organization.getOrganizationName() == null || organization.getOrganizationType() == null || organization.getCacRegNumber() == null;
+    }
+
     @Transactional
     public List<ProjectResponseDto> createProject(ProjectRequestDto projectRequestDto, SecurityDetails details){
         if(projectRequestDto == null)
@@ -79,12 +89,13 @@ public class OrganizationService {
         var organization = repo.findById(details.getId());
         if(organization.isEmpty())
             throw new EntityNotFoundException("Failed to fetch organization");
+
         Organization org = organization.get();
 
+        if(!org.getProfileCompleted())
+            throw new IllegalOperationException("Profile not complete, cannot create project");
+        
         Project project = projectService.createProject(projectRequestDto, org);
-
-        //        org.addProject(project);
-        //        repo.save(org);
 
         return projectMapper.toDtos(projectService.getOrganizationProjects(org));
     }
@@ -144,7 +155,8 @@ public class OrganizationService {
                 .toList()));
 
         ApplicationStats stats = applicationService.getVolunteerStats(organization);
-        return new OrganizationDashboard(organization.getOrganizationName(), projectDtoMap, 5.0, stats);
+
+        return new OrganizationDashboard(organization.getOrganizationName(), projectDtoMap, 5.0, stats ,!organization.getProfileCompleted());
     }
 
     public List<Project> getProjects(SecurityDetails details){
@@ -162,5 +174,43 @@ public class OrganizationService {
     public void deleteProject(Long projectId, String organizationId) {
         Organization organization = em.getReference(Organization.class, organizationId);
         projectService.deleteProject(projectId, organization);
+    }
+
+    public void requestOtp( String email) {
+        emailService.sendOtpTo(email, AccountType.ORGANIZATION, OtpPurpose.EMAIL_VERIFICATION);
+    }
+
+    @Transactional
+    public void confirmEmail(SecurityDetails details, String Otp){
+        otpService.verifyOtp(details.getUsername(), Otp, AccountType.ORGANIZATION, OtpPurpose.EMAIL_VERIFICATION);
+
+        Organization organization = repo.findById(details.getId()).orElseThrow();
+
+        organization.setEmailVerified(true);
+        repo.save(organization);
+    }
+
+    public void resetPassword(String email, String newPassword, String otp) {
+        otpService.verifyOtp(email, otp, AccountType.ORGANIZATION, OtpPurpose.PASSWORD_RESET);
+        service.updatePassword(encoder.encode(newPassword), email );
+    }
+
+    public OrganizationProfileDto getOrganizationProfile(SecurityDetails details) {
+        Organization organization = em.getReference(Organization.class, details.getId());
+        return toProfile(organization, details);
+    }
+
+    @Transactional
+    public OrganizationProfileDto updateOrganization(OrganizationUpdateDto organizationDto, SecurityDetails details) {
+        Organization organization = em.getReference(Organization.class, details.getId());
+        mapper.updateOrganization(organizationDto, organization);
+        return toProfile(organization, details);
+    }
+
+    private OrganizationProfileDto toProfile(Organization organization, SecurityDetails details){
+        OrganizationDto orgDto = mapper.toOrganizationDto(organization);
+        OrganizationContactDto orgContact = mapper.toOrganizationContact(organization);
+        orgContact.setEmail(details.getUsername());
+        return new OrganizationProfileDto(orgContact, orgDto);
     }
 }

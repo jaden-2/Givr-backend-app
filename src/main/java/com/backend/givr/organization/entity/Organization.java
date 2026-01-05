@@ -1,7 +1,7 @@
 package com.backend.givr.organization.entity;
 
+import com.backend.givr.organization.dtos.Identification;
 import com.backend.givr.shared.Location;
-import com.backend.givr.shared.enums.OrganizationType;
 import com.backend.givr.shared.enums.ProjectStatus;
 import com.backend.givr.shared.enums.VerificationStatus;
 import jakarta.persistence.*;
@@ -14,7 +14,6 @@ import lombok.ToString;
 import org.hibernate.validator.constraints.URL;
 
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -48,24 +47,31 @@ public class Organization {
     @Column(unique = true)
     private String cacRegNumber;
 
-    @NotBlank
-    private String driversLicenseNumber;
+    @Embedded
+    private Identification identification;
 
     @NotNull
     @ManyToOne
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
+
+    private String address;
+
     private String description;
 
     @URL
     private String website;
+    @URL
+    private String profileUrl;
 
     @Enumerated(EnumType.STRING)
     private VerificationStatus status;
 
+    private Boolean emailVerified;
+
+    private Boolean profileCompleted;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "organization", orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<Project> projects;
-
 
     public void addProject(Project project){
         project.setStatus(ProjectStatus.DRAFT);

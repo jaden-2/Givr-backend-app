@@ -1,6 +1,6 @@
 package com.backend.givr.shared.jwt;
 
-import com.backend.givr.shared.AuthDTO;
+import com.backend.givr.shared.dtos.AuthDTO;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.shared.service.TokenIdService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +42,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(auth.email(), auth.password());
             return authManager.authenticate(token);
         } catch (IOException e) {
+
             throw new RuntimeException(e);
         }catch (AuthenticationException e){
             throw new BadCredentialsException("Invalid credentials", e);

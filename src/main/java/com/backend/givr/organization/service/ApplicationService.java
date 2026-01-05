@@ -5,8 +5,8 @@ import com.backend.givr.organization.entity.Organization;
 import com.backend.givr.organization.entity.Project;
 import com.backend.givr.organization.entity.ProjectApplication;
 import com.backend.givr.organization.repo.ProjectApplicationRepo;
-import com.backend.givr.shared.ProjectApplicationForm;
-import com.backend.givr.shared.VolunteerApplicationDto;
+import com.backend.givr.shared.dtos.ProjectApplicationForm;
+import com.backend.givr.shared.dtos.VolunteerApplicationDto;
 import com.backend.givr.shared.enums.ApplicationStatus;
 import com.backend.givr.shared.exceptions.IllegalOperationException;
 import com.backend.givr.shared.exceptions.MaxApplicantsReachedException;
@@ -19,10 +19,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 

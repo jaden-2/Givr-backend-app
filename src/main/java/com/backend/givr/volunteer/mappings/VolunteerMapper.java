@@ -12,20 +12,25 @@ import com.backend.givr.volunteer.dtos.UpdateVolunteerDto;
 import com.backend.givr.volunteer.dtos.VolunteerDto;
 import com.backend.givr.volunteer.dtos.VolunteerProfile;
 import com.backend.givr.volunteer.entity.Volunteer;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {SkillMapper.class})
+@Mapper(componentModel = "spring", uses = {SkillMapper.class}, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface VolunteerMapper {
 
     @Mapping(source = "phone", target = "phoneNumber")
     Volunteer toVolunteer(CreateVolunteerRequestDto dto);
+
+    @Mapping(target = "skills", ignore = true)
     void updateVolunteer(UpdateVolunteerDto updatedVolunteer, @MappingTarget Volunteer volunteer);
 
+    @AfterMapping
+    default void updateVolunteerSkills(UpdateVolunteerDto updateVolunteerDto, @MappingTarget Volunteer volunteer){
+        volunteer.setSkills(Set.copyOf(updateVolunteerDto.getSkills().stream().map(Skill::new).toList()));
+    }
     @Mapping(target = "skills", ignore = true)
     @Mapping(target = "id", source = "volunteerId")
     VolunteerProfile toProfile(Volunteer volunteer);

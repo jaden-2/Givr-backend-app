@@ -1,9 +1,6 @@
 package com.backend.givr.shared;
 
-import com.backend.givr.shared.exceptions.DuplicateAccountException;
-import com.backend.givr.shared.exceptions.InconsistentProjectDatesException;
-import com.backend.givr.shared.exceptions.MaxApplicantsReachedException;
-import com.backend.givr.shared.exceptions.ProjectDeadlinePastException;
+import com.backend.givr.shared.exceptions.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,5 +41,10 @@ public class ControllerAdviser {
     @ExceptionHandler(value = ParseException.class)
     public ResponseEntity<String> handleParseException(ParseException e){
         return ResponseEntity.unprocessableEntity().body(String.format("Incompatible date format, expected format yyyy-MM-dd. %s", e.getLocalizedMessage()));
+    }
+
+    @ExceptionHandler(value = InvalidOtpException.class)
+    public ResponseEntity<String> handleInvalidOtpException(InvalidOtpException e){
+        return ResponseEntity.badRequest().body(e.getLocalizedMessage());
     }
 }

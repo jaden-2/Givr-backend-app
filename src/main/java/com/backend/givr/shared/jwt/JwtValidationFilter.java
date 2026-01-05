@@ -32,10 +32,11 @@ public class JwtValidationFilter extends OncePerRequestFilter {
     }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(request.getCookies()== null){
+        if(request.getCookies()== null || request.getServletPath().endsWith("/auth/login")){
             filterChain.doFilter(request, response);
             return;
         }
+
         try{
             Cookie[] cookies = request.getCookies();
             String accessToken = null;
@@ -54,17 +55,17 @@ public class JwtValidationFilter extends OncePerRequestFilter {
                     user = organizationDetailsService.loadUserByUsername(jwtUtil.extractUsername(accessToken));
 
                 if (jwtUtil.isTokenValid(accessToken, user)) {
-
                     UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(token);
                 }else{
                     throw new InvalidTokenException("Invalid token");
                 }
             }else{
-                throw new IllegalArgumentException("Request does not contain the right credentials");
+                filterChain.doFilter(request, response);
+                return;
             }
 
-        } catch (JwtException | InvalidTokenException | IllegalArgumentException e){
+        } catch (JwtException | InvalidTokenException e){
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getLocalizedMessage());
             return;
         }

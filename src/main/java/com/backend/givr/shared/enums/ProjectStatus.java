@@ -1,5 +1,5 @@
 package com.backend.givr.shared.enums;
 
 public enum ProjectStatus {
-    DRAFT, OPEN, ONGOING, COMPLETED
+    DRAFT, OPEN, CLOSE, ONGOING, COMPLETED
 }

@@ -18,11 +18,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-@Mapper(componentModel = "spring", uses = {VolunteerMapper.class, SkillMapper.class})
+@Mapper(componentModel = "spring", uses = {VolunteerMapper.class, SkillMapper.class}, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface OrganizationMapper {
 
     Organization toOrganization(CreateOrganizationDto organizationDto);
-
 
     @AfterMapping
     default void updateVolunteerAndOrganization(Project project, @MappingTarget ProjectResponseDto projectDto){
@@ -50,5 +49,18 @@ public interface OrganizationMapper {
     }
     default Set<Skill> toSet(List<Skill> skills){
         return Set.copyOf(skills);
+    }
+
+    OrganizationContactDto toOrganizationContact(Organization organization);
+
+    // name -> organizationName;
+    // category -> organizationType;
+    @Mapping(source = "name", target = "organizationName")
+    @Mapping(target = "organizationType", ignore = true)
+    void updateOrganization(OrganizationUpdateDto organizationDto, @MappingTarget Organization organization);
+
+    default void updateOrganizationType(OrganizationUpdateDto organizationUpdateDto, @MappingTarget Organization organization){
+        if(organizationUpdateDto.getCategory() != null)
+            organization.setOrganizationType(organizationUpdateDto.getCategory().getFirst());
     }
 }

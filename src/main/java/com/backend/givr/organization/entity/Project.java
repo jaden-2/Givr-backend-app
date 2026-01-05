@@ -13,6 +13,7 @@ import lombok.ToString;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Set;
@@ -58,6 +59,8 @@ public class Project {
     @Embedded
     private AttendanceHours attendanceHours;
 
+    private Boolean orgNotifiedOfDeadline;
+
     @Enumerated(EnumType.STRING)
     private ProjectStatus status;
 
@@ -89,5 +92,21 @@ public class Project {
     @Transient
     public int getVolunteerCount(){
         return approvedList==null? 0 : approvedList.size();
+    }
+
+    public boolean shouldClose(LocalDateTime now){
+        return status != ProjectStatus.CLOSE && now.isAfter(deadline.atTime(23, 59, 59));
+    }
+
+    public void closeApplication(){
+        this.status = ProjectStatus.CLOSE;
+    }
+
+    public boolean shouldNotifyDeadline(){
+        return status==ProjectStatus.CLOSE && !orgNotifiedOfDeadline;
+    }
+
+    public void markOrgNotifiedOfDeadline(){
+        this.orgNotifiedOfDeadline = true;
     }
 }

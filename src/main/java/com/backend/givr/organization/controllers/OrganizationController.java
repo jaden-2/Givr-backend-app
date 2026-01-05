@@ -1,19 +1,18 @@
 package com.backend.givr.organization.controllers;
 
-import com.backend.givr.organization.dtos.CreateOrganizationDto;
-import com.backend.givr.organization.dtos.OrganizationDashboard;
-import com.backend.givr.organization.dtos.ProjectRequestDto;
+import com.backend.givr.organization.dtos.*;
 
-import com.backend.givr.organization.dtos.ProjectResponseDto;
-import com.backend.givr.organization.mappings.OrganizationMapper;
 import com.backend.givr.organization.service.ApplicationService;
 import com.backend.givr.organization.service.OrganizationService;
-import com.backend.givr.shared.VolunteerApplicationDto;
+import com.backend.givr.shared.dtos.VolunteerApplicationDto;
 import com.backend.givr.shared.enums.ApplicationStatus;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.shared.mapper.ProjectMapper;
+import com.backend.givr.shared.otp.OtpDto;
+import com.backend.givr.shared.service.LogoutService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +31,9 @@ public class OrganizationController {
     @Autowired
     private OrganizationService service;
 
+    @Autowired
+    private LogoutService logoutService;
+
     @PostMapping("/auth/signup")
     public ResponseEntity<Void> createVolunteerAccount(@RequestBody @Valid CreateOrganizationDto createOrganizationDto){
         service.createOrganization(createOrganizationDto);
@@ -41,6 +43,17 @@ public class OrganizationController {
     @GetMapping("/dashboard")
     public ResponseEntity<OrganizationDashboard> getOrganizationDashboard(@AuthenticationPrincipal SecurityDetails details){
         return ResponseEntity.ok(service.getOrganizationDashboard(details));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<OrganizationProfileDto> getOrganizationProfile(@AuthenticationPrincipal SecurityDetails details){
+        return ResponseEntity.ok(service.getOrganizationProfile(details));
+    }
+
+    @PatchMapping("/profile")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<OrganizationProfileDto> updateOrganizationProfile(@RequestBody OrganizationUpdateDto organizationDto, @AuthenticationPrincipal SecurityDetails details){
+        return ResponseEntity.ok(service.updateOrganization(organizationDto, details));
     }
 
     @GetMapping("/projects")
@@ -84,5 +97,22 @@ public class OrganizationController {
     public ResponseEntity<Void> deleteProject(@PathVariable("projectId") Long projectId, @AuthenticationPrincipal SecurityDetails details){
         service.deleteProject(projectId, details.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/verify/email/otp")
+    public ResponseEntity<Void> verifyEmail(@AuthenticationPrincipal SecurityDetails details){
+        service.requestOtp( details.getUsername());
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/verify/email")
+    public ResponseEntity<Void> confirmEmail(@RequestBody @Valid OtpDto otpDto, @AuthenticationPrincipal SecurityDetails details){
+        service.confirmEmail(details, otpDto.otp());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/logout")
+    ResponseEntity<Void> logout(@AuthenticationPrincipal SecurityDetails authUser) {
+        return ResponseEntity.ok().headers(logoutService.logout(authUser)).build();
     }
 }

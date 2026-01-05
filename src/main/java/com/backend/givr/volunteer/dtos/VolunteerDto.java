@@ -1,8 +1,7 @@
 package com.backend.givr.volunteer.dtos;
 
 import com.backend.givr.organization.dtos.LocationDto;
-import com.backend.givr.shared.Location;
-import com.backend.givr.shared.SkillDto;
+import com.backend.givr.shared.dtos.SkillDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -1,5 +1,6 @@
 package com.backend.givr.organization.security;
 
+import com.backend.givr.volunteer.security.VolunteerDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,12 +16,18 @@ public class OrganizationDetailsService implements UserDetailsService {
 
     @Override
     public OrganizationDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return repo.findById(username).orElseThrow(()->new NoSuchElementException("Invalid credentials"));
+        return repo.findByEmail(username).orElseThrow(()->new UsernameNotFoundException("Invalid credentials"));
     }
 
     public void save(OrganizationDetails details){
         if(details == null)
             return;
         repo.save(details);
+    }
+
+    public void updatePassword(String newPassword, String email) {
+        OrganizationDetails organizationDetails = loadUserByUsername(email);
+        organizationDetails.setPassword(newPassword);
+        repo.save(organizationDetails);
     }
 }

@@ -1,16 +1,26 @@
 package com.backend.givr.volunteer.service;
 
+import com.backend.givr.organization.dtos.ProjectResponseDto;
+import com.backend.givr.organization.entity.Project;
 import com.backend.givr.organization.entity.ProjectApplication;
 import com.backend.givr.organization.service.ApplicationService;
 import com.backend.givr.organization.service.ParticipationService;
+import com.backend.givr.organization.service.ProjectService;
 import com.backend.givr.shared.Location;
-import com.backend.givr.shared.ParticipationDto;
-import com.backend.givr.shared.ProjectApplicationForm;
+import com.backend.givr.shared.dtos.ParticipationDto;
+import com.backend.givr.shared.dtos.ProjectApplicationForm;
+import com.backend.givr.shared.email.EmailService;
+import com.backend.givr.shared.enums.AccountType;
+import com.backend.givr.shared.enums.OtpPurpose;
+import com.backend.givr.shared.enums.ProjectStatus;
+import com.backend.givr.shared.exceptions.CredentialsChangedException;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.shared.mapper.ProjectMapper;
+import com.backend.givr.shared.otp.OTPService;
 import com.backend.givr.shared.repo.SkillRepo;
 import com.backend.givr.shared.service.LocationService;
 import com.backend.givr.shared.service.SkillService;
+import com.backend.givr.shared.service.TokenIdService;
 import com.backend.givr.volunteer.dtos.CreateVolunteerRequestDto;
 import com.backend.givr.volunteer.dtos.UpdateVolunteerDto;
 import com.backend.givr.volunteer.dtos.VolunteerDashboard;
@@ -23,6 +33,7 @@ import com.backend.givr.volunteer.security.VolunteerDetailsService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +41,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class VolunteerService {
@@ -44,11 +58,18 @@ public class VolunteerService {
 
     @Autowired
     private ProjectMapper projectMapper;
+
     @Autowired
     private ApplicationService applicationService;
 
     @Autowired
+    private ProjectService projectService;
+
+    @Autowired
     private PasswordEncoder encoder;
+
+    @Autowired
+    private TokenIdService tokenService;
 
     @Autowired
     private SkillService skillService;
@@ -56,6 +77,10 @@ public class VolunteerService {
     private LocationService locationService;
     @Autowired
     private ParticipationService participationService;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private OTPService otpService;
 
     @Autowired
     private SkillRepo skillRepo;
@@ -73,6 +98,8 @@ public class VolunteerService {
         Volunteer volunteer = mapper.toVolunteer(volunteerDto);
         Location location = locationService.createLocation(volunteer.getLocation());
         volunteer.getLocation().setId(location.getId());
+        volunteer.setEmailIsVerified(false);
+        volunteer.setPhoneIsVerified(false);
         return updateSkills(volunteer, volunteerDto.getInterests());
     }
 
@@ -111,12 +138,19 @@ public class VolunteerService {
        return repo.save(volunteer);
     }
 
-
-    public Volunteer updateProfile(String volunteerId, UpdateVolunteerDto updateVolunteerDto){
+    @Transactional
+    public VolunteerProfile updateProfile(String volunteerId, UpdateVolunteerDto updatedVolunteerDto, SecurityDetails details){
         Volunteer volunteer = manager.getReference(Volunteer.class, volunteerId);
         volunteer.setLocation(locationService.createLocation(volunteer.getLocation()));
-        mapper.updateVolunteer(updateVolunteerDto, volunteer);
-        return repo.save(volunteer);
+        mapper.updateVolunteer(updatedVolunteerDto, volunteer);
+        String email = details.getUsername();
+
+        if(updatedVolunteerDto.getEmail() != null && !updatedVolunteerDto.getEmail().equals(details.getUsername())){
+            VolunteerDetails volunteerDetails = detailsService.loadUserByUsername(details.getUsername());
+            volunteerDetails.setEmail(updatedVolunteerDto.getEmail());
+        }
+
+        return mapper.toProfile(volunteer);
     }
 
     public void apply(String id, @Valid ProjectApplicationForm applicationForm) {
@@ -127,5 +161,39 @@ public class VolunteerService {
     public List<ParticipationDto> getMyVolunteering(SecurityDetails details){
         Volunteer volunteer = manager.getReference(Volunteer.class, details.getId());
         return projectMapper.toParticipationDto(participationService.getVolunteerParticipation(volunteer));
+    }
+
+    public void requestOtp(String email) {
+        emailService.sendOtpTo(email, AccountType.VOLUNTEER, OtpPurpose.EMAIL_VERIFICATION);
+    }
+
+    public void confirmEmail(SecurityDetails details, @Email String otp) {
+        otpService.verifyOtp(details.getUsername(), otp, AccountType.VOLUNTEER, OtpPurpose.EMAIL_VERIFICATION);
+        Volunteer volunteer = repo.findById(details.getId()).orElseThrow();
+        volunteer.setEmailIsVerified(true);
+        repo.save(volunteer);
+    }
+
+    @Transactional
+    public void resetPassword(String email, String newPassword, String otp){
+        otpService.verifyOtp(email, otp, AccountType.VOLUNTEER, OtpPurpose.PASSWORD_RESET);
+        detailsService.updatePassword(encoder.encode(newPassword), email );
+    }
+
+    public List<ProjectResponseDto> getRecommendedProjects(SecurityDetails details) {
+        Volunteer volunteer = manager.getReference(Volunteer.class, details.getId());
+        var projects = projectService.getVolunteerRecommendedProjects(volunteer, ProjectStatus.OPEN).stream().filter(project -> {
+                    LocalDateTime endOfDay = project.getDeadline().atTime(23, 59, 59);
+                    return endOfDay.isAfter(LocalDateTime.now());
+                })
+                .sorted(Comparator.comparing(Project::getCreatedAt))
+                .toList();;
+
+        return projectMapper.toDtos(projects);
+    }
+
+    public void rejectParticipation(Long participationId, String id) {
+        Volunteer volunteer = manager.getReference(Volunteer.class, id);
+        participationService.deleteVolunteerParticipation(participationId, volunteer );
     }
 }

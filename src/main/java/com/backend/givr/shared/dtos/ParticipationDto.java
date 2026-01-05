@@ -1,4 +1,4 @@
-package com.backend.givr.shared;
+package com.backend.givr.shared.dtos;
 
 import com.backend.givr.organization.dtos.OrganizationDto;
 import com.backend.givr.organization.dtos.ProjectResponseDto;

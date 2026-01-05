@@ -26,20 +26,18 @@ public class CreateOrganizationDto {
     @Size(min = 11, max = 13, message = "Invalid phone number length")
     @NotBlank
     private String phoneNumber;
-
-    @NotBlank
+    private String profileUrl;
     private String organizationName;
 
-    @NotBlank
     private String organizationType;
 
-    @NotBlank
     private String cacRegNumber;
 
-    @NotBlank
-    private String driversLicenseNumber;
-
     @NotNull
+    private Identification identification;
+    private String address;
+
+    @NotBlank
     private Location location;
 
     private String description;

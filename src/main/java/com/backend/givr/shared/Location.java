@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @Setter
-@Table(uniqueConstraints = @UniqueConstraint(name = "unq_state_lga", columnNames = {"state", "lga"}) )
+@Table(indexes = @Index(name = "idx_state", columnList = "state"), uniqueConstraints = @UniqueConstraint(name = "unq_state_lga", columnNames = {"state", "lga"} ))
 public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

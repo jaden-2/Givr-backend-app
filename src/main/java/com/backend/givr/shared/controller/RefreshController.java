@@ -11,6 +11,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,7 @@ public class RefreshController {
 
     @PersistenceContext
     private EntityManager manager;
+
     RefreshController(TokenIdService tokenService, JwtUtil util){
         service = tokenService;
         this.util = util;
@@ -52,8 +54,8 @@ public class RefreshController {
                 refreshToken = cookie.getValue();
                 break;
             }
-
         }
+
         if(!StringUtils.hasText(refreshToken))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
@@ -109,27 +111,4 @@ public class RefreshController {
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
-
-    @GetMapping("/logout")
-    ResponseEntity<Void> logout(@AuthenticationPrincipal SecurityDetails authUser) {
-
-        HttpHeaders headers = new HttpHeaders();
-
-        headers.add(HttpHeaders.SET_COOKIE, ResponseCookie.from("RefreshToken")
-                .sameSite("None")
-                .httpOnly(true)
-                .secure(true)
-                .path("/auth")
-                .maxAge(Duration.ZERO)
-                .build().toString());
-        headers.add(HttpHeaders.SET_COOKIE, ResponseCookie.from("AccessToken")
-                .sameSite("None")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(Duration.ZERO)
-                .build().toString());
-
-        return ResponseEntity.ok().headers(headers).build();
-    }
-    }
+}

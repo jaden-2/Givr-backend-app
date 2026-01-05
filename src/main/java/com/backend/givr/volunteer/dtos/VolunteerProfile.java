@@ -22,7 +22,11 @@ public class VolunteerProfile {
     @Size(min = 11, max = 13)
     private String phoneNumber;
     private List<String> skills;
+    private Location location;
+    private String email;
+
+
     private boolean emailIsVerified;
     private boolean phoneIsVerified;
-    private Location location;
+
 }

@@ -7,18 +7,13 @@ import com.backend.givr.organization.entity.Participation;
 import com.backend.givr.organization.entity.Project;
 import com.backend.givr.organization.entity.ProjectApplication;
 import com.backend.givr.organization.mappings.OrganizationMapper;
-import com.backend.givr.shared.ParticipationDto;
+import com.backend.givr.shared.dtos.ParticipationDto;
 import com.backend.givr.shared.Skill;
 import org.mapstruct.*;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {OrganizationMapper.class})

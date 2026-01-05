@@ -18,8 +18,15 @@ import java.util.List;
 @NoArgsConstructor
 public class OrganizationDetails implements SecurityDetails {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Setter
     @Email(message = "Invalid Email format")
+    @Column(unique = true)
     private String email;
+
+    @Setter
     private String password;
     private Collection<GrantedAuthority> roles = List.of(new SimpleGrantedAuthority("ORGANIZATION"));
 

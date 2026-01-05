@@ -31,7 +31,11 @@ public class OrganizationDto {
     @NotNull
     private LocationDto location;
 
+    private Boolean profileCompleted;
+
+    private String profileUrl;
     private VerificationStatus status;
     private String description;
     private String website;
+    private String address;
 }
