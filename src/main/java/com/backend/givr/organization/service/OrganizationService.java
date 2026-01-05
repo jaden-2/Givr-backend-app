@@ -204,6 +204,7 @@ public class OrganizationService {
     public OrganizationProfileDto updateOrganization(OrganizationUpdateDto organizationDto, SecurityDetails details) {
         Organization organization = em.getReference(Organization.class, details.getId());
         mapper.updateOrganization(organizationDto, organization);
+        organization.setLocation(locationService.createLocation(organization.getLocation()));
         return toProfile(organization, details);
     }
 
