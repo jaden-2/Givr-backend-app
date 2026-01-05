@@ -20,9 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
-import java.time.temporal.TemporalAccessor;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -50,6 +48,10 @@ public class ProjectService {
                 .sorted(Comparator.comparing(Project::getCreatedAt))
                 .toList();
         return mapper.toDtos(result);
+    }
+
+    public List<Project> getProjectByOrganizationAndStatus(Organization organization, ProjectStatus status){
+        return repo.findAllByOrganizationAndStatus(organization, status);
     }
 
     public List<Project> getOrganizationProjects(Organization organization){
@@ -85,8 +87,8 @@ public class ProjectService {
         return repo.save(project);
     }
     private boolean projectDatesValid(Project project){
-        var startDateBeforeNow = project.getStartDate().isBefore(LocalDate.now(ZoneId.of("Africa/Lagos")));
-        var endDateBeforeNow = project.getEndDate().isBefore(LocalDate.now(ZoneId.of("Africa/Lagos")));
+        var startDateBeforeNow = project.getStartDate().isAfter(LocalDate.now(ZoneId.of("Africa/Lagos")));
+        var endDateBeforeNow = project.getEndDate().isAfter(LocalDate.now(ZoneId.of("Africa/Lagos")));
         var deadlineBeforeStart = project.getDeadline().isBefore(project.getStartDate());
         var startBeforeEndDate = project.getStartDate().isBefore(project.getEndDate());
 

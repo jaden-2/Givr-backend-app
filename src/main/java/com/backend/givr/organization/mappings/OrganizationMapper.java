@@ -30,12 +30,12 @@ public interface OrganizationMapper {
 
     @Mapping(target = "id", source = "organizationId")
     @Mapping(target = "name", source = "organizationName")
-    @Mapping(target = "category", source = "organizationType")
     OrganizationDto toOrganizationDto (Organization organization);
 
     @AfterMapping
     default void updateActiveProjectCount(Organization organization, @MappingTarget OrganizationDto organizationDto){
         organizationDto.setNumOfActiveProjects(organization.getNumOfActiveProjects());
+        organizationDto.setCategory(List.of(organization.getOrganizationType()));
     }
 
     List<OrganizationDto> toOrganizationDtoList (List<Organization> organizations);
@@ -51,14 +51,17 @@ public interface OrganizationMapper {
         return Set.copyOf(skills);
     }
 
+
     OrganizationContactDto toOrganizationContact(Organization organization);
 
     // name -> organizationName;
     // category -> organizationType;
     @Mapping(source = "name", target = "organizationName")
     @Mapping(target = "organizationType", ignore = true)
+    @Mapping(target = "location", ignore = true)
     void updateOrganization(OrganizationUpdateDto organizationDto, @MappingTarget Organization organization);
 
+    @AfterMapping
     default void updateOrganizationType(OrganizationUpdateDto organizationUpdateDto, @MappingTarget Organization organization){
         if(organizationUpdateDto.getCategory() != null)
             organization.setOrganizationType(organizationUpdateDto.getCategory().getFirst());

@@ -16,7 +16,6 @@ public class ProjectRequestDto {
     @NotBlank
     private String title;
 
-    @NotBlank
     private String description;
 
     @NotNull

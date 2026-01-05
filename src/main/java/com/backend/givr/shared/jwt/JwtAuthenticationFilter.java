@@ -45,6 +45,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             throw new RuntimeException(e);
         }catch (AuthenticationException e){
+            System.out.println("Coule not authenticate");
             throw new BadCredentialsException("Invalid credentials", e);
         }
     }
@@ -71,7 +72,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         ResponseCookie refreshCookie = ResponseCookie.from("RefreshToken").value(refreshToken)
                                         .path(String.format("/%s/api/auth", apiVersion))
                                         .maxAge(JwtUtil.REFRESHEXPIRATION)
-                                        .sameSite(Cookie.SameSite.STRICT.attributeValue())
+                                        .sameSite(Cookie.SameSite.NONE.attributeValue())
                                         .httpOnly(true)
                                         .secure(true)
                                         .build();

@@ -102,7 +102,7 @@ public class RefreshController {
                     .path(String.format("/%s/api/auth", apiVersion))
                     .secure(true)
                     .httpOnly(true)
-                    .sameSite("Strict")
+                    .sameSite("None")
                     .build();
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.SET_COOKIE, accessCookie.toString());

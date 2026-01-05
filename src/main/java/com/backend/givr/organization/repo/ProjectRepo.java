@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,4 +39,6 @@ public interface ProjectRepo extends JpaRepository<Project, Long> {
     )
 """)
     List<Project> findProjectsWithAnyMatchingSkill(Volunteer volunteer, String state, ProjectStatus status);
+
+    List<Project> findAllByOrganizationAndStatus(Organization organization, ProjectStatus status);
 }

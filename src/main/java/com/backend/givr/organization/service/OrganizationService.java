@@ -7,6 +7,7 @@ import com.backend.givr.organization.mappings.OrganizationMapper;
 import com.backend.givr.organization.repo.OrganizationRepo;
 import com.backend.givr.organization.security.OrganizationDetails;
 import com.backend.givr.organization.security.OrganizationDetailsService;
+import com.backend.givr.shared.Location;
 import com.backend.givr.shared.dtos.VolunteerApplicationDto;
 import com.backend.givr.shared.email.EmailService;
 import com.backend.givr.shared.enums.*;
@@ -61,7 +62,7 @@ public class OrganizationService {
         }
         Organization organization = mapper.toOrganization(organizationDto);
 
-        organization.setProfileCompleted(!orgProfileNotComplete(organization));
+        organization.setProfileCompleted(orgProfileComplete(organization));
 
         organization.setLocation(locationService.createLocation(organization.getLocation()));
         organization.setStatus(VerificationStatus.UNVERIFIED);
@@ -77,8 +78,8 @@ public class OrganizationService {
         }
     }
 
-    private boolean orgProfileNotComplete(Organization organization){
-        return organization.getOrganizationName() == null || organization.getOrganizationType() == null || organization.getCacRegNumber() == null;
+    private boolean orgProfileComplete(Organization organization){
+        return organization.getOrganizationName() != null && organization.getOrganizationType() != null && organization.getCacRegNumber() != null;
     }
 
     @Transactional
@@ -97,7 +98,7 @@ public class OrganizationService {
         
         Project project = projectService.createProject(projectRequestDto, org);
 
-        return projectMapper.toDtos(projectService.getOrganizationProjects(org));
+        return projectMapper.toDtos(projectService.getProjectByOrganizationAndStatus(org, ProjectStatus.DRAFT));
     }
 
     public void approveApplication(Long applicationId){
@@ -204,7 +205,11 @@ public class OrganizationService {
     public OrganizationProfileDto updateOrganization(OrganizationUpdateDto organizationDto, SecurityDetails details) {
         Organization organization = em.getReference(Organization.class, details.getId());
         mapper.updateOrganization(organizationDto, organization);
-        organization.setLocation(locationService.createLocation(organization.getLocation()));
+        Location location = locationService.createLocation(organizationDto.getLocation());
+
+        organization.setLocation(location);
+        organization.setProfileCompleted(orgProfileComplete(organization));
+
         return toProfile(organization, details);
     }
 
