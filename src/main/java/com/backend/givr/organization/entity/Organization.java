@@ -47,9 +47,6 @@ public class Organization {
     @Column(unique = true)
     private String cacRegNumber;
 
-    @Embedded
-    private Identification identification;
-
     @ManyToOne
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;

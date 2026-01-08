@@ -1,5 +1,6 @@
 package com.backend.givr.volunteer.dtos;
 
+import com.backend.givr.organization.dtos.LocationDto;
 import com.backend.givr.shared.Location;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -22,7 +23,7 @@ public class VolunteerProfile {
     @Size(min = 11, max = 13)
     private String phoneNumber;
     private List<String> skills;
-    private Location location;
+    private LocationDto location;
     private String email;
 
 

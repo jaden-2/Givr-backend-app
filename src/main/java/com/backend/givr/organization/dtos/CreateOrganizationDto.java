@@ -22,23 +22,20 @@ public class CreateOrganizationDto {
     @NotBlank
     private String contactLastname;
 
-
-    @Size(min = 11, max = 13, message = "Invalid phone number length")
-    @NotBlank
-    private String phoneNumber;
-    private String profileUrl;
-    private String organizationName;
-
-    private String organizationType;
-
-    private String cacRegNumber;
-
-    @NotNull
-    private Identification identification;
-    private String address;
-
-    private Location location;
-
-    private String description;
-    private String website;
+//    @Size(min = 11, max = 13, message = "Invalid phone number length")
+//    @NotBlank
+//    private String phoneNumber;
+//    private String profileUrl;
+//    private String organizationName;
+//
+//    private String organizationType;
+//
+//    private String cacRegNumber;
+//
+//    private String address;
+//
+//    private Location location;
+//
+//    private String description;
+//    private String website;
 }

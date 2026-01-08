@@ -8,6 +8,7 @@ import com.backend.givr.organization.repo.OrganizationRepo;
 import com.backend.givr.organization.security.OrganizationDetails;
 import com.backend.givr.organization.security.OrganizationDetailsService;
 import com.backend.givr.shared.Location;
+import com.backend.givr.shared.dtos.PasswordUpdateDto;
 import com.backend.givr.shared.dtos.VolunteerApplicationDto;
 import com.backend.givr.shared.email.EmailService;
 import com.backend.givr.shared.enums.*;
@@ -20,6 +21,8 @@ import com.backend.givr.shared.service.LocationService;
 import com.backend.givr.shared.service.SkillService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -73,7 +76,7 @@ public class OrganizationService {
             OrganizationDetails details = new OrganizationDetails(organizationDto.getEmail(), encoder.encode(organizationDto.getPassword()), savedOrganization);
             service.save(details);
             return savedOrganization;
-        }catch (DataIntegrityViolationException ignored){
+        }catch (DataIntegrityViolationException | ConstraintViolationException ignored){
             throw new DuplicateAccountException("An organization with the same cac registration number or email already exists ");
         }
     }
@@ -177,22 +180,21 @@ public class OrganizationService {
         projectService.deleteProject(projectId, organization);
     }
 
-    public void requestOtp( String email) {
-        emailService.sendOtpTo(email, AccountType.ORGANIZATION, OtpPurpose.EMAIL_VERIFICATION);
+    public void requestOtp( String email, OtpPurpose purpose) {
+        emailService.sendOtpTo(email, AccountType.ORGANIZATION, purpose);
     }
 
     @Transactional
     public void confirmEmail(SecurityDetails details, String Otp){
         otpService.verifyOtp(details.getUsername(), Otp, AccountType.ORGANIZATION, OtpPurpose.EMAIL_VERIFICATION);
 
-        Organization organization = repo.findById(details.getId()).orElseThrow();
-
+        Organization organization = repo.findById(details.getId()).orElseThrow(()->new EntityNotFoundException("User with email does not exist"));
         organization.setEmailVerified(true);
         repo.save(organization);
     }
 
     public void resetPassword(String email, String newPassword, String otp) {
-        otpService.verifyOtp(email, otp, AccountType.ORGANIZATION, OtpPurpose.PASSWORD_RESET);
+        otpService.verifyOtp(email, otp, AccountType.ORGANIZATION, OtpPurpose.PASSWORD_UPDATE);
         service.updatePassword(encoder.encode(newPassword), email );
     }
 
@@ -218,5 +220,12 @@ public class OrganizationService {
         OrganizationContactDto orgContact = mapper.toOrganizationContact(organization);
         orgContact.setEmail(details.getUsername());
         return new OrganizationProfileDto(orgContact, orgDto);
+    }
+
+    @Transactional
+    public void updatePassword(@Valid PasswordUpdateDto passwordUpdateDto, SecurityDetails details) {
+        OrganizationDetails orgDetails = em.getReference(OrganizationDetails.class, details.getUsername());
+        otpService.verifyOtp(details.getUsername(), passwordUpdateDto.otp(), AccountType.ORGANIZATION, OtpPurpose.PASSWORD_UPDATE);
+        orgDetails.setPassword(passwordUpdateDto.password());
     }
 }

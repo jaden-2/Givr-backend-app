@@ -4,8 +4,10 @@ import com.backend.givr.organization.dtos.*;
 
 import com.backend.givr.organization.service.ApplicationService;
 import com.backend.givr.organization.service.OrganizationService;
+import com.backend.givr.shared.dtos.PasswordUpdateDto;
 import com.backend.givr.shared.dtos.VolunteerApplicationDto;
 import com.backend.givr.shared.enums.ApplicationStatus;
+import com.backend.givr.shared.enums.OtpPurpose;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.shared.mapper.ProjectMapper;
 import com.backend.givr.shared.otp.OtpDto;
@@ -99,9 +101,9 @@ public class OrganizationController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/verify/email/otp")
-    public ResponseEntity<Void> verifyEmail(@AuthenticationPrincipal SecurityDetails details){
-        service.requestOtp( details.getUsername());
+    @PostMapping("/otp/request?{purpose}")
+    public ResponseEntity<Void> requestOtp(@AuthenticationPrincipal SecurityDetails details, @RequestParam("purpose") OtpPurpose purpose){
+        service.requestOtp( details.getUsername(),purpose);
         return ResponseEntity.ok().build();
     }
 
@@ -111,6 +113,11 @@ public class OrganizationController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/password/update")
+    public ResponseEntity<Void> updatePassword(@RequestBody @Valid PasswordUpdateDto passwordUpdateDto, @AuthenticationPrincipal SecurityDetails details){
+        service.updatePassword(passwordUpdateDto, details);
+        return ResponseEntity.noContent().build();
+    }
     @PostMapping("/logout")
     ResponseEntity<Void> logout(@AuthenticationPrincipal SecurityDetails authUser) {
         return ResponseEntity.ok().headers(logoutService.logout(authUser)).build();

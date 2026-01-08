@@ -1,8 +1,10 @@
 package com.backend.givr.shared.email;
 
 import com.backend.givr.shared.enums.AccountType;
+import com.backend.givr.shared.enums.OTPStatus;
 import com.backend.givr.shared.enums.OtpPurpose;
 import com.backend.givr.shared.exceptions.FailedToSendOTPException;
+import com.backend.givr.shared.otp.OTP;
 import com.backend.givr.shared.otp.OTPGenerator;
 import com.backend.givr.shared.otp.OTPService;
 import com.resend.Resend;
@@ -13,6 +15,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EmailService {
@@ -37,19 +40,22 @@ public class EmailService {
         String html = emailTemplateService.otpEmail(otpToken, OTPGenerator.DURATION);
 
         CreateEmailOptions params = CreateEmailOptions.builder()
-                .from("Acme <onboarding@resend.dev>")
-                .to("jedidiahamonia1@gmail.com")
+                .from("Givr Notification <no-reply@notifications.givr.ng>")
+                .to(email)
                 .subject("GIVR OTP Request")
                 .html(html)
                 .build();
+        OTP otp = otpService.generateOtp(email, otpToken, accountType, purpose);
+
+        if(otp.isSent())
+            return;
 
         try {
             CreateEmailResponse data = resend.emails().send(params);
-            otpService.generateOtp(email, otpToken, accountType, data.getId(), purpose);
+            otpService.markAsSent(otp, data.getId());
         } catch (ResendException e) {
+            otpService.deleteOtp(otp);
             throw new FailedToSendOTPException(e.getLocalizedMessage());
         }
     }
-
-
 }

@@ -2,6 +2,7 @@ package com.backend.givr.shared.service;
 
 import com.backend.givr.organization.service.OrganizationService;
 import com.backend.givr.shared.enums.AccountType;
+import com.backend.givr.shared.enums.OtpPurpose;
 import com.backend.givr.volunteer.service.VolunteerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,10 +17,10 @@ public class PasswordResetService {
     public void requestPasswordReset(String email, AccountType role){
         switch (role){
             case VOLUNTEER -> {
-                volunteerService.requestOtp(email);
+                volunteerService.requestOtp(email, OtpPurpose.PASSWORD_UPDATE);
             }
             case ORGANIZATION -> {
-                organizationService.requestOtp(email);
+                organizationService.requestOtp(email, OtpPurpose.PASSWORD_UPDATE);
             }
         }
     }

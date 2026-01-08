@@ -33,4 +33,6 @@ public interface OTPRepo extends JpaRepository<OTP, Long> {
             AND o.isUsed = false
             """)
     int markAllUsed(String email, AccountType accountType, OtpPurpose purpose);
+
+    Optional<OTP> findByEmailAndAccountTypeAndPurpose(String email, AccountType accountType, OtpPurpose purpose);
 }

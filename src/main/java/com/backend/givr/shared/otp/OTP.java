@@ -1,6 +1,7 @@
 package com.backend.givr.shared.otp;
 
 import com.backend.givr.shared.enums.AccountType;
+import com.backend.givr.shared.enums.OTPStatus;
 import com.backend.givr.shared.enums.OtpPurpose;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,6 +22,7 @@ import java.time.ZoneId;
 })
 public class OTP {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     @Column(nullable = false, length = 64)
@@ -30,8 +32,13 @@ public class OTP {
     private String email;
 
     @Setter
+    private String resendEmailId;
+
+    @Setter
     @Column(nullable = false)
     private Boolean isUsed;
+
+    private OTPStatus status;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -49,19 +56,35 @@ public class OTP {
     @Column(nullable = false, updatable = false)
     private LocalDateTime expiresAt;
 
-    public OTP(String email, String otpHash, Duration duration, AccountType accountType, String id){
+    private LocalDateTime sentAt;
+
+    public OTP(String email, String otpHash, Duration duration, AccountType accountType){
         this.otpHash = otpHash;
         this.duration = duration;
         this.email = email;
         this.accountType = accountType;
-        this.id = id;
         this.isUsed = false;
+        this.status = OTPStatus.PENDING;
+    }
+
+    @PreUpdate()
+    private void setTimeline(){
+        if(status == OTPStatus.SENT){
+            this.sentAt = LocalDateTime.now(ZoneId.of("africa/lagos"));
+            this.expiresAt = this.createdAt.plus(this.duration);
+        }
     }
 
     @PrePersist()
-    private void setTimeline(){
+    private  void setCreatedAt(){
         this.createdAt = LocalDateTime.now(ZoneId.of("africa/lagos"));
-        this.expiresAt = this.createdAt.plus(this.duration);
     }
 
+    public void markAsSent(String resendEmailId){
+        this.status = OTPStatus.SENT;
+        this.resendEmailId = resendEmailId;
+    }
+    public boolean isSent(){
+        return status == OTPStatus.SENT;
+    }
 }

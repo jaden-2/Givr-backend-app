@@ -70,9 +70,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                         .build();
 
         ResponseCookie refreshCookie = ResponseCookie.from("RefreshToken").value(refreshToken)
-                                        .path(String.format("/%s/api/auth", apiVersion))
+                                        .path("/")
                                         .maxAge(JwtUtil.REFRESHEXPIRATION)
-                                        .sameSite(Cookie.SameSite.NONE.attributeValue())
+                                        .sameSite(Cookie.SameSite.STRICT.attributeValue())
                                         .httpOnly(true)
                                         .secure(true)
                                         .build();

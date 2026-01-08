@@ -7,6 +7,7 @@ import com.backend.givr.organization.service.ParticipationService;
 import com.backend.givr.organization.service.ProjectService;
 import com.backend.givr.shared.dtos.ParticipationDto;
 import com.backend.givr.shared.dtos.ProjectApplicationForm;
+import com.backend.givr.shared.enums.OtpPurpose;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.shared.otp.OtpDto;
 import com.backend.givr.shared.service.LogoutService;
@@ -99,9 +100,9 @@ public class VolunteerController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/verify/email/otp")
-    public ResponseEntity<Void> verifyEmail(@AuthenticationPrincipal SecurityDetails details){
-        service.requestOtp( details.getUsername());
+    @PostMapping("/otp/request?{purpose}")
+    public ResponseEntity<Void> verifyEmail(@AuthenticationPrincipal SecurityDetails details, @RequestParam("purpose")OtpPurpose purpose){
+        service.requestOtp( details.getUsername(), purpose);
         return ResponseEntity.ok().build();
     }
 

@@ -13,7 +13,6 @@ import com.backend.givr.shared.email.EmailService;
 import com.backend.givr.shared.enums.AccountType;
 import com.backend.givr.shared.enums.OtpPurpose;
 import com.backend.givr.shared.enums.ProjectStatus;
-import com.backend.givr.shared.exceptions.CredentialsChangedException;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.shared.mapper.ProjectMapper;
 import com.backend.givr.shared.otp.OTPService;
@@ -44,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class VolunteerService {
@@ -163,8 +161,8 @@ public class VolunteerService {
         return projectMapper.toParticipationDto(participationService.getVolunteerParticipation(volunteer));
     }
 
-    public void requestOtp(String email) {
-        emailService.sendOtpTo(email, AccountType.VOLUNTEER, OtpPurpose.EMAIL_VERIFICATION);
+    public void requestOtp(String email, OtpPurpose purpose) {
+        emailService.sendOtpTo(email, AccountType.VOLUNTEER, purpose);
     }
 
     public void confirmEmail(SecurityDetails details, @Email String otp) {
@@ -176,7 +174,7 @@ public class VolunteerService {
 
     @Transactional
     public void resetPassword(String email, String newPassword, String otp){
-        otpService.verifyOtp(email, otp, AccountType.VOLUNTEER, OtpPurpose.PASSWORD_RESET);
+        otpService.verifyOtp(email, otp, AccountType.VOLUNTEER, OtpPurpose.PASSWORD_UPDATE);
         detailsService.updatePassword(encoder.encode(newPassword), email );
     }
 
