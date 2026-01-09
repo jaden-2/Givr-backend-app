@@ -36,8 +36,6 @@ public class Organization {
     @Column(nullable = false)
     private String contactLastname;
 
-    @NotBlank
-    @Column(nullable = false)
     private String phoneNumber;
 
     private String organizationName;
