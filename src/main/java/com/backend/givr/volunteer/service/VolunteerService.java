@@ -36,6 +36,7 @@ import jakarta.validation.constraints.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -161,6 +162,7 @@ public class VolunteerService {
         return projectMapper.toParticipationDto(participationService.getVolunteerParticipation(volunteer));
     }
 
+    @Async
     public void requestOtp(String email, OtpPurpose purpose) {
         emailService.sendOtpTo(email, AccountType.VOLUNTEER, purpose);
     }

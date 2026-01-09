@@ -37,6 +37,7 @@ public class OTPService {
     @Transactional
     public void markAsSent(OTP otp, String emailId){
         otp.markAsSent(emailId);
+        repo.save(otp);
     }
 
     public void deleteOtp(OTP otp){

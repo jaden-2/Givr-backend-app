@@ -25,6 +25,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -180,6 +181,7 @@ public class OrganizationService {
         projectService.deleteProject(projectId, organization);
     }
 
+    @Async
     public void requestOtp( String email, OtpPurpose purpose) {
         emailService.sendOtpTo(email, AccountType.ORGANIZATION, purpose);
     }
@@ -206,9 +208,11 @@ public class OrganizationService {
     @Transactional
     public OrganizationProfileDto updateOrganization(OrganizationUpdateDto organizationDto, SecurityDetails details) {
         Organization organization = em.getReference(Organization.class, details.getId());
+        if(!Objects.equals(organizationDto.getEmail(), details.getUsername()))
+            organization.setEmailVerified(false);
+
         mapper.updateOrganization(organizationDto, organization);
         Location location = locationService.createLocation(organizationDto.getLocation());
-
         organization.setLocation(location);
         organization.setProfileCompleted(orgProfileComplete(organization));
 
@@ -224,8 +228,8 @@ public class OrganizationService {
 
     @Transactional
     public void updatePassword(@Valid PasswordUpdateDto passwordUpdateDto, SecurityDetails details) {
-        OrganizationDetails orgDetails = em.getReference(OrganizationDetails.class, details.getUsername());
+        OrganizationDetails orgDetails = service.loadUserByUsername(details.getUsername());
         otpService.verifyOtp(details.getUsername(), passwordUpdateDto.otp(), AccountType.ORGANIZATION, OtpPurpose.PASSWORD_UPDATE);
-        orgDetails.setPassword(passwordUpdateDto.password());
+        orgDetails.setPassword(encoder.encode(passwordUpdateDto.password()));
     }
 }

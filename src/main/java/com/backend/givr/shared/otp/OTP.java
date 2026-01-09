@@ -23,7 +23,7 @@ import java.time.ZoneId;
 public class OTP {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     @Column(nullable = false, length = 64)
     private String otpHash;
@@ -38,6 +38,7 @@ public class OTP {
     @Column(nullable = false)
     private Boolean isUsed;
 
+    @Enumerated(EnumType.STRING)
     private OTPStatus status;
 
     @Column(nullable = false)
@@ -53,7 +54,7 @@ public class OTP {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    @Column(nullable = false, updatable = false)
+
     private LocalDateTime expiresAt;
 
     private LocalDateTime sentAt;
@@ -70,14 +71,14 @@ public class OTP {
     @PreUpdate()
     private void setTimeline(){
         if(status == OTPStatus.SENT){
-            this.sentAt = LocalDateTime.now(ZoneId.of("africa/lagos"));
+            this.sentAt = LocalDateTime.now(ZoneId.of("Africa/Lagos"));
             this.expiresAt = this.createdAt.plus(this.duration);
         }
     }
 
     @PrePersist()
     private  void setCreatedAt(){
-        this.createdAt = LocalDateTime.now(ZoneId.of("africa/lagos"));
+        this.createdAt = LocalDateTime.now(ZoneId.of("Africa/Lagos"));
     }
 
     public void markAsSent(String resendEmailId){

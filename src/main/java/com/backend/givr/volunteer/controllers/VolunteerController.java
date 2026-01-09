@@ -103,7 +103,7 @@ public class VolunteerController {
     @PostMapping("/otp/request?{purpose}")
     public ResponseEntity<Void> verifyEmail(@AuthenticationPrincipal SecurityDetails details, @RequestParam("purpose")OtpPurpose purpose){
         service.requestOtp( details.getUsername(), purpose);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.accepted().build();
     }
 
     @PatchMapping("/verify/email")

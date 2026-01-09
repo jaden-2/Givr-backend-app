@@ -101,10 +101,10 @@ public class OrganizationController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/otp/request?{purpose}")
+    @PostMapping("/otp/request")
     public ResponseEntity<Void> requestOtp(@AuthenticationPrincipal SecurityDetails details, @RequestParam("purpose") OtpPurpose purpose){
         service.requestOtp( details.getUsername(),purpose);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.accepted().build();
     }
 
     @PatchMapping("/verify/email")

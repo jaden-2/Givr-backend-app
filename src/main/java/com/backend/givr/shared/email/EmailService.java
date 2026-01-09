@@ -14,6 +14,7 @@ import com.resend.services.emails.model.CreateEmailResponse;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +53,7 @@ public class EmailService {
 
         try {
             CreateEmailResponse data = resend.emails().send(params);
+            System.out.println(data.getId());
             otpService.markAsSent(otp, data.getId());
         } catch (ResendException e) {
             otpService.deleteOtp(otp);

@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         ResponseCookie accessCookie = ResponseCookie.from("AccessToken").value(accessToken)
                                         .path("/")
                                         .maxAge(JwtUtil.ACCESSEXPIRATION)
-                                        .sameSite(Cookie.SameSite.NONE.attributeValue())
+                                        .sameSite(Cookie.SameSite.LAX.attributeValue())
                                         .httpOnly(true)
                                         .secure(true)
                                         .build();
@@ -72,7 +72,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         ResponseCookie refreshCookie = ResponseCookie.from("RefreshToken").value(refreshToken)
                                         .path("/")
                                         .maxAge(JwtUtil.REFRESHEXPIRATION)
-                                        .sameSite(Cookie.SameSite.STRICT.attributeValue())
+                                        .sameSite(Cookie.SameSite.LAX.attributeValue())
                                         .httpOnly(true)
                                         .secure(true)
                                         .build();
