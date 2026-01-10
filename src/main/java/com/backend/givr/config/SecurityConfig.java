@@ -33,7 +33,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-@EnableWebSecurity
 @Configuration
 @EnableScheduling
 public class SecurityConfig {
