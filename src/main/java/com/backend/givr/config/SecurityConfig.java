@@ -1,5 +1,7 @@
 package com.backend.givr.config;
 
+import com.backend.givr.organization.oauth2.OrganizationOathService;
+import com.backend.givr.organization.oauth2.OrganizationOauthSuccessHandler;
 import com.backend.givr.organization.security.OrganizationDetailsService;
 import com.backend.givr.shared.jwt.JwtAuthenticationFilter;
 import com.backend.givr.shared.jwt.JwtUtil;
@@ -48,6 +50,8 @@ public class SecurityConfig {
     @Value("${api.version}")
     private String apiVersion;
 
+    @Autowired
+    private OrganizationOathService organizationOathService;
     @Bean
     PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -94,7 +98,7 @@ public class SecurityConfig {
         JwtAuthenticationFilter authFilter = new JwtAuthenticationFilter(jwtUtil, organizationAuthManager(organizationDetailsService), tokenIdService, apiVersion);
         authFilter.setFilterProcessesUrl("/v1/api/organization/auth/login");
         JwtValidationFilter validationFilter = new JwtValidationFilter(jwtUtil, volunteerDetailsService, organizationDetailsService);
-
+        OrganizationOauthSuccessHandler successHandler = new OrganizationOauthSuccessHandler(organizationDetailsService, jwtUtil, tokenIdService);
         return httpSecurity
                 .securityMatcher("/v1/api/organization/**")
                 .cors(Customizer.withDefaults())

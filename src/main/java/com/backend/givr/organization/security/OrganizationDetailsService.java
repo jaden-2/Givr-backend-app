@@ -1,5 +1,6 @@
 package com.backend.givr.organization.security;
 
+import com.backend.givr.shared.oauth.AuthProvider;
 import com.backend.givr.volunteer.security.VolunteerDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +18,10 @@ public class OrganizationDetailsService implements UserDetailsService {
     @Override
     public OrganizationDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return repo.findByEmail(username).orElseThrow(()->new UsernameNotFoundException("Invalid credentials"));
+    }
+
+    public OrganizationDetails loadUserByProvider(String providerId, AuthProvider provider){
+        return repo.findByAuthProviderAndProviderId(providerId, AuthProvider.GOOGLE).orElseThrow(()-> new UsernameNotFoundException("Invalid credentials"));
     }
 
     public void save(OrganizationDetails details){

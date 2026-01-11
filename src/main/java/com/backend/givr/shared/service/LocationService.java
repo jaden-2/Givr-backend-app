@@ -14,6 +14,8 @@ public class LocationService {
     private LocationRepo repo;
 
     public Location createLocation(Location location){
+        if(location == null)
+            return null;
         Optional<Location> location1 = repo.findByStateAndLga(location.getState(), location.getLga());
         return location1.orElseGet(() -> repo.save(location));
     }

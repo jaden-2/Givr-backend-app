@@ -1,0 +1,61 @@
+package com.backend.givr.organization.oauth2;
+
+import com.backend.givr.organization.entity.Organization;
+import com.backend.givr.organization.repo.OrganizationRepo;
+import com.backend.givr.organization.security.OrganizationDetails;
+import com.backend.givr.organization.security.OrganizationDetailsRepo;
+import com.backend.givr.shared.enums.VerificationStatus;
+import com.backend.givr.shared.exceptions.DuplicateAccountException;
+import com.backend.givr.shared.oauth.AuthProvider;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Service
+public class OrganizationOathService implements OAuth2UserService<OidcUserRequest, OidcUser> {
+    @Autowired
+    private OrganizationRepo repo;
+    @Autowired
+    private OrganizationDetailsRepo detailsRepo;
+
+    private final OidcUserService delegate = new OidcUserService();
+
+    @Override
+    public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+        OidcUser user = delegate.loadUser(userRequest);
+        Optional<OrganizationDetails> details = detailsRepo.findByAuthProviderAndProviderId(user.getSubject(), AuthProvider.GOOGLE);
+
+        if(details.isEmpty()){
+            createOrganization(user);
+        }
+        return user;
+    }
+
+    private void createOrganization(OidcUser user){
+        Organization organization = new Organization();
+
+        organization.setProfileCompleted(false);
+        organization.setStatus(VerificationStatus.UNVERIFIED);
+        organization.setEmailVerified(user.getEmailVerified());
+        organization.setContactFirstname(user.getName());
+        organization.setContactLastname(user.getFamilyName());
+        organization.setContactMiddleName(user.getMiddleName());
+
+
+        try{
+            var savedOrganization = repo.save(organization);
+            OrganizationDetails details = new OrganizationDetails( user.getSubject(), user.getEmail(), AuthProvider.GOOGLE, savedOrganization);
+            detailsRepo.save(details);
+        }catch (DataIntegrityViolationException | ConstraintViolationException ignored){
+            throw new DuplicateAccountException("Organization account exist");
+        }
+    }
+}
