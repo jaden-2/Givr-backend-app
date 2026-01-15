@@ -58,6 +58,10 @@ public class OrganizationController {
         return ResponseEntity.ok(service.updateOrganization(organizationDto, details));
     }
 
+    @GetMapping("/profile/email/exists")
+    public ResponseEntity<EmailExists> emailExists(@RequestParam("email") String email,@AuthenticationPrincipal SecurityDetails details){
+        return ResponseEntity.ok(service.emailExists(email, details));
+    }
     @GetMapping("/projects")
     public ResponseEntity<List<ProjectResponseDto>> getOrganizationProjects(@AuthenticationPrincipal SecurityDetails details){
         return ResponseEntity.ok(mapper.toDtos(service.getProjects(details)));
@@ -72,6 +76,7 @@ public class OrganizationController {
     public ResponseEntity<ProjectResponseDto> updateProject(@PathVariable("projectId") Long projectId, @RequestBody ProjectRequestDto projectRequestDto){
         return ResponseEntity.accepted().body(service.updateProject(projectId, projectRequestDto));
     }
+
     @GetMapping("/projects/applicants")
     public ResponseEntity<List<VolunteerApplicationDto>> getProjectApplication(@AuthenticationPrincipal SecurityDetails details){
         return ResponseEntity.ok(service.getProjectApplications(details));
@@ -118,6 +123,7 @@ public class OrganizationController {
         service.updatePassword(passwordUpdateDto, details);
         return ResponseEntity.noContent().build();
     }
+
     @PostMapping("/logout")
     ResponseEntity<Void> logout(@AuthenticationPrincipal SecurityDetails authUser) {
         return ResponseEntity.ok().headers(logoutService.logout(authUser)).build();

@@ -2,6 +2,7 @@ package com.backend.givr.shared.jwt;
 
 import com.backend.givr.shared.dtos.AuthDTO;
 import com.backend.givr.shared.interfaces.SecurityDetails;
+import com.backend.givr.shared.oauth.AuthProviderType;
 import com.backend.givr.shared.service.TokenIdService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -11,29 +12,30 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.web.server.Cookie;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    private final JwtUtil jwtUtil;
+
     private final ObjectMapper mapper = new ObjectMapper();
     private final TokenIdService tokenService;
-    private final AuthenticationManager authManager;
-
-    private final String apiVersion;
+    private final AuthenticationProvider authManager;
+    private final GivrCookie givrCookie;
 
     //private final CreatorService creatorService;
-    public JwtAuthenticationFilter(JwtUtil service, AuthenticationManager authManager, TokenIdService tokenService, String apiVersion){
-        this.jwtUtil = service;
-        this.authManager = authManager;
+    public JwtAuthenticationFilter(GivrCookie givrCookie, AuthenticationProvider provider, TokenIdService tokenService){
+        this.givrCookie = givrCookie;
+        this.authManager = provider;
         this.tokenService = tokenService;
-        this.apiVersion = apiVersion;
+
     }
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
@@ -45,41 +47,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             throw new RuntimeException(e);
         }catch (AuthenticationException e){
-            System.out.println("Coule not authenticate");
             throw new BadCredentialsException("Invalid credentials", e);
         }
     }
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        String accessId = JwtUtil.generateJti();
-        String accessToken = jwtUtil.generateToken((SecurityDetails) authResult.getPrincipal(), accessId, JwtUtil.ACCESSEXPIRATION.toMillis());
-        String refreshId = JwtUtil.generateJti();
-        String refreshToken= jwtUtil.generateToken((SecurityDetails) authResult.getPrincipal(), refreshId, JwtUtil.REFRESHEXPIRATION.toMillis());
+        SecurityDetails details = (SecurityDetails) authResult.getPrincipal();
 
-        String email = ((UserDetails) authResult.getPrincipal()).getUsername();
-
-        tokenService.createToken(refreshId, email, JwtUtil.REFRESHEXPIRATION.toMillis());
-
-        ResponseCookie accessCookie = ResponseCookie.from("AccessToken").value(accessToken)
-                                        .path("/")
-                                        .maxAge(JwtUtil.ACCESSEXPIRATION)
-                                        .sameSite(Cookie.SameSite.LAX.attributeValue())
-                                        .httpOnly(true)
-                                        .secure(true)
-                                        .build();
-
-        ResponseCookie refreshCookie = ResponseCookie.from("RefreshToken").value(refreshToken)
-                                        .path("/")
-                                        .maxAge(JwtUtil.REFRESHEXPIRATION)
-                                        .sameSite(Cookie.SameSite.LAX.attributeValue())
-                                        .httpOnly(true)
-                                        .secure(true)
-                                        .build();
-
-        response.addHeader("Set-Cookie", accessCookie.toString());
-        response.addHeader("Set-Cookie", refreshCookie.toString());
-
+        givrCookie.addCookieToResponse(details, response);
         response.setStatus(200);
         response.getWriter().flush();
     }

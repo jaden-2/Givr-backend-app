@@ -25,8 +25,7 @@ public class VolunteerProfile {
     private List<String> skills;
     private LocationDto location;
     private String email;
-
-
+    private boolean emailEditable;
     private boolean emailIsVerified;
     private boolean phoneIsVerified;
 

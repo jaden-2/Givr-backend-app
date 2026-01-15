@@ -1,6 +1,7 @@
 package com.backend.givr.volunteer.security;
 
 import com.backend.givr.shared.interfaces.SecurityDetails;
+import com.backend.givr.shared.oauth.AuthProviderType;
 import com.backend.givr.volunteer.entity.Volunteer;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,10 +34,22 @@ public class VolunteerDetails implements SecurityDetails {
     @JoinColumn(name = "volunteer_id")
     @Getter
     private Volunteer volunteer;
+    @Getter
+    @Enumerated(EnumType.STRING)
+    private AuthProviderType authProvider;
+    @Getter
+    private String providerId;
 
     public VolunteerDetails(String email, String password, Volunteer volunteer){
         this.email = email;
         this.password = password;
+        this.volunteer = volunteer;
+        this.authProvider = AuthProviderType.LOCAL;
+    }
+    public VolunteerDetails(Volunteer volunteer, OidcUser user, AuthProviderType type){
+        this.email = user.getEmail();
+        this.authProvider = type;
+        this.providerId = user.getSubject();
         this.volunteer = volunteer;
     }
 
@@ -63,5 +76,10 @@ public class VolunteerDetails implements SecurityDetails {
     @Override
     public void setAuthorities() {
         this.roles = List.of(new SimpleGrantedAuthority("VOLUNTEER"));
+    }
+
+    @Override
+    public AuthProviderType getProviderType() {
+        return this.authProvider;
     }
 }

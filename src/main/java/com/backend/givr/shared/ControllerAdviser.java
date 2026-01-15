@@ -22,6 +22,16 @@ public class ControllerAdviser {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Entity does not exist %s", e.getLocalizedMessage()));
     }
 
+    @ExceptionHandler(CredentialsChangedException.class)
+    public ResponseEntity<String> handleCredentialsChangedException(CredentialsChangedException e){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getLocalizedMessage());
+    }
+
+    @ExceptionHandler(IllegalOperationException.class)
+    public ResponseEntity<String> handleIllegalOperation(CredentialsChangedException e){
+        return ResponseEntity.badRequest().body(e.getLocalizedMessage());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public  ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e){
         return ResponseEntity.badRequest().body(String.format("Cannot pass null argument %s", e.getLocalizedMessage()));

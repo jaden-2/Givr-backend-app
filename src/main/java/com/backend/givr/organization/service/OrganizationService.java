@@ -16,6 +16,7 @@ import com.backend.givr.shared.exceptions.DuplicateAccountException;
 import com.backend.givr.shared.exceptions.IllegalOperationException;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.shared.mapper.ProjectMapper;
+import com.backend.givr.shared.oauth.AuthProviderType;
 import com.backend.givr.shared.otp.OTPService;
 import com.backend.givr.shared.service.LocationService;
 import com.backend.givr.shared.service.SkillService;
@@ -23,6 +24,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
@@ -67,7 +69,6 @@ public class OrganizationService {
         Organization organization = mapper.toOrganization(organizationDto);
 
         organization.setProfileCompleted(orgProfileComplete(organization));
-
         organization.setLocation(locationService.createLocation(organization.getLocation()));
         organization.setStatus(VerificationStatus.UNVERIFIED);
         organization.setEmailVerified(false);
@@ -208,8 +209,11 @@ public class OrganizationService {
     @Transactional
     public OrganizationProfileDto updateOrganization(OrganizationUpdateDto organizationDto, SecurityDetails details) {
         Organization organization = em.getReference(Organization.class, details.getId());
-        if(!Objects.equals(organizationDto.getEmail(), details.getUsername()))
+
+        if((organizationDto.getEmail()!= null) && !Objects.equals(organizationDto.getEmail(), details.getUsername())) {
             organization.setEmailVerified(false);
+            service.updateEmail(organizationDto.getEmail(), details.getUsername());
+        }
 
         mapper.updateOrganization(organizationDto, organization);
         Location location = locationService.createLocation(organizationDto.getLocation());
@@ -223,6 +227,7 @@ public class OrganizationService {
         OrganizationDto orgDto = mapper.toOrganizationDto(organization);
         OrganizationContactDto orgContact = mapper.toOrganizationContact(organization);
         orgContact.setEmail(details.getUsername());
+        orgContact.setEmailEditable(details.getProviderType() == AuthProviderType.LOCAL);
         return new OrganizationProfileDto(orgContact, orgDto);
     }
 
@@ -231,5 +236,9 @@ public class OrganizationService {
         OrganizationDetails orgDetails = service.loadUserByUsername(details.getUsername());
         otpService.verifyOtp(details.getUsername(), passwordUpdateDto.otp(), AccountType.ORGANIZATION, OtpPurpose.PASSWORD_UPDATE);
         orgDetails.setPassword(encoder.encode(passwordUpdateDto.password()));
+    }
+
+    public EmailExists emailExists(String email, SecurityDetails details) {
+        return new EmailExists(email, !Objects.equals(email, details.getUsername()) && service.emailExist(email));
     }
 }

@@ -10,7 +10,7 @@ import lombok.Setter;
 import java.time.ZonedDateTime;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint( columnNames = {"project", "volunteer"}), name = "AppliedProjects")
+@Table(uniqueConstraints = @UniqueConstraint( columnNames = {"project_id", "volunteer_id"}), name = "AppliedProjects")
 @Getter
 @Setter
 @NoArgsConstructor

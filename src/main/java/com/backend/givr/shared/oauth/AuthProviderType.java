@@ -1,5 +1,5 @@
 package com.backend.givr.shared.oauth;
 
-public enum AuthProvider {
+public enum AuthProviderType {
     LOCAL, GOOGLE
 }

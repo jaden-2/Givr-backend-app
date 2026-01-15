@@ -27,10 +27,7 @@ public interface VolunteerMapper {
     @Mapping(target = "skills", ignore = true)
     void updateVolunteer(UpdateVolunteerDto updatedVolunteer, @MappingTarget Volunteer volunteer);
 
-    @AfterMapping
-    default void updateVolunteerSkills(UpdateVolunteerDto updateVolunteerDto, @MappingTarget Volunteer volunteer){
-        volunteer.setSkills(Set.copyOf(updateVolunteerDto.getSkills().stream().map(Skill::new).toList()));
-    }
+
     @Mapping(target = "skills", ignore = true)
     @Mapping(target = "id", source = "volunteerId")
     VolunteerProfile toProfile(Volunteer volunteer);

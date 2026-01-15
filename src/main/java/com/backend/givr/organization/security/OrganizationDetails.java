@@ -2,7 +2,7 @@ package com.backend.givr.organization.security;
 
 import com.backend.givr.organization.entity.Organization;
 import com.backend.givr.shared.interfaces.SecurityDetails;
-import com.backend.givr.shared.oauth.AuthProvider;
+import com.backend.givr.shared.oauth.AuthProviderType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.Getter;
@@ -10,14 +10,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 
 @Entity
 @NoArgsConstructor
-@Table(uniqueConstraints = @UniqueConstraint(name = "provider_providerId_unique", columnNames = {"provider", "authProvider"}))
+@Table(uniqueConstraints = @UniqueConstraint(name = "provider_providerId_unique", columnNames = {"provider_id", "auth_provider"}))
 public class OrganizationDetails implements SecurityDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,7 +38,8 @@ public class OrganizationDetails implements SecurityDetails {
 
     @Getter
     @Enumerated(EnumType.STRING)
-    private AuthProvider authProvider;
+    private AuthProviderType authProvider;
+
     @Getter
     private String providerId;
 
@@ -47,9 +47,10 @@ public class OrganizationDetails implements SecurityDetails {
         this.email = email;
         this.password = password;
         this.organization = organization;
+        this.authProvider = AuthProviderType.LOCAL;
     }
 
-    public OrganizationDetails(String providerId, String email, AuthProvider provider, Organization organization){
+    public OrganizationDetails(String providerId, String email, AuthProviderType provider, Organization organization){
         this.providerId = providerId;
         this.email= email;
         this.organization = organization;
@@ -79,5 +80,10 @@ public class OrganizationDetails implements SecurityDetails {
     @Override
     public void setAuthorities() {
         this.roles = List.of(new SimpleGrantedAuthority("ORGANIZATION"));
+    }
+
+    @Override
+    public AuthProviderType getProviderType() {
+        return this.authProvider;
     }
 }

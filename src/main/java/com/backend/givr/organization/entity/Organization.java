@@ -1,12 +1,10 @@
 package com.backend.givr.organization.entity;
 
-import com.backend.givr.organization.dtos.Identification;
 import com.backend.givr.shared.Location;
 import com.backend.givr.shared.enums.ProjectStatus;
 import com.backend.givr.shared.enums.VerificationStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -46,14 +44,13 @@ public class Organization {
     private String cacRegNumber;
 
     @ManyToOne
-    @JoinColumn(name = "location_id", nullable = false)
+    @JoinColumn(name = "location_id")
     private Location location;
 
     private String address;
 
     private String description;
 
-    @URL
     private String website;
     @URL
     private String profileUrl;

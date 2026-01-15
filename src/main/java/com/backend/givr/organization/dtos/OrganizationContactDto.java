@@ -12,5 +12,6 @@ public class OrganizationContactDto {
     private String phoneNumber;
     private String email;
 
+    private Boolean emailEditable;
     private Boolean emailVerified;
 }

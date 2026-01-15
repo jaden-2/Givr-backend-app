@@ -6,7 +6,7 @@ import com.backend.givr.organization.security.OrganizationDetails;
 import com.backend.givr.organization.security.OrganizationDetailsRepo;
 import com.backend.givr.shared.enums.VerificationStatus;
 import com.backend.givr.shared.exceptions.DuplicateAccountException;
-import com.backend.givr.shared.oauth.AuthProvider;
+import com.backend.givr.shared.oauth.AuthProviderType;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,11 +16,12 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
-public class OrganizationOathService implements OAuth2UserService<OidcUserRequest, OidcUser> {
+public class OrganizationOAuthService implements OAuth2UserService<OidcUserRequest, OidcUser> {
     @Autowired
     private OrganizationRepo repo;
     @Autowired
@@ -31,7 +32,7 @@ public class OrganizationOathService implements OAuth2UserService<OidcUserReques
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         OidcUser user = delegate.loadUser(userRequest);
-        Optional<OrganizationDetails> details = detailsRepo.findByAuthProviderAndProviderId(user.getSubject(), AuthProvider.GOOGLE);
+        Optional<OrganizationDetails> details = detailsRepo.findByProviderIdAndAuthProvider(user.getSubject(), AuthProviderType.GOOGLE);
 
         if(details.isEmpty()){
             createOrganization(user);
@@ -39,23 +40,23 @@ public class OrganizationOathService implements OAuth2UserService<OidcUserReques
         return user;
     }
 
+    @Transactional
     private void createOrganization(OidcUser user){
         Organization organization = new Organization();
-
         organization.setProfileCompleted(false);
         organization.setStatus(VerificationStatus.UNVERIFIED);
         organization.setEmailVerified(user.getEmailVerified());
-        organization.setContactFirstname(user.getName());
+        organization.setContactFirstname(user.getGivenName());
         organization.setContactLastname(user.getFamilyName());
         organization.setContactMiddleName(user.getMiddleName());
-
+        organization.setProfileUrl(user.getPicture());
 
         try{
             var savedOrganization = repo.save(organization);
-            OrganizationDetails details = new OrganizationDetails( user.getSubject(), user.getEmail(), AuthProvider.GOOGLE, savedOrganization);
+            OrganizationDetails details = new OrganizationDetails( user.getSubject(), user.getEmail(), AuthProviderType.GOOGLE, savedOrganization);
             detailsRepo.save(details);
         }catch (DataIntegrityViolationException | ConstraintViolationException ignored){
-            throw new DuplicateAccountException("Organization account exist");
+            throw new DuplicateAccountException("Organization violates constraints");
         }
     }
 }

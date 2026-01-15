@@ -35,7 +35,8 @@ public interface OrganizationMapper {
     @AfterMapping
     default void updateActiveProjectCount(Organization organization, @MappingTarget OrganizationDto organizationDto){
         organizationDto.setNumOfActiveProjects(organization.getNumOfActiveProjects());
-        organizationDto.setCategory(List.of(organization.getOrganizationType()));
+        List<String> organizationType = organization.getOrganizationType() == null? List.of("") : List.of(organization.getOrganizationType());
+        organizationDto.setCategory(organizationType);
     }
 
     List<OrganizationDto> toOrganizationDtoList (List<Organization> organizations);

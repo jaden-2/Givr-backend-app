@@ -1,0 +1,51 @@
+api:
+  version: v1
+spring:
+  application:
+    name: givr
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: admin
+    driver-class-name: org.postgresql.Driver
+    hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+  jpa:
+    properties:
+      hibernate:
+        default_schema: givr
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google-org:
+            provider: google
+            client-id: REMOVED_SECRET
+            client-secret: REMOVED_SECRET
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "http://127.0.0.1:8080/v1/api/organization/oauth2/code/google"
+          google-volunteer:
+            provider: google
+            client-id: REMOVED_SECRET
+            client-secret: REMOVED_SECRET
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/v1/api/volunteer/oauth2/code/google"
+
+client:
+  app:
+    baseUrl: "http://127.0.0.1:5173"
+jwt:
+  secret: REMOVED_SECRET
+OTP:
+  SECRETS: REMOVED_SECRET
+RESEND_API_TOKEN: REMOVED_SECRET

@@ -1,6 +1,6 @@
 package com.backend.givr.organization.security;
 
-import com.backend.givr.shared.oauth.AuthProvider;
+import com.backend.givr.shared.oauth.AuthProviderType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,5 +10,8 @@ import java.util.Optional;
 public interface OrganizationDetailsRepo extends JpaRepository<OrganizationDetails, Long> {
     Optional<OrganizationDetails> findByEmail(String email);
 
-    Optional<OrganizationDetails> findByAuthProviderAndProviderId(String subject, AuthProvider authProvider);
+    Optional<OrganizationDetails> findByProviderIdAndAuthProvider(String subject, AuthProviderType authProvider);
+
+    boolean existsByEmail(String email);
+
 }

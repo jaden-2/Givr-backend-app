@@ -13,7 +13,7 @@ import java.time.ZoneId;
 
 @Entity
 @NoArgsConstructor
-@Table(uniqueConstraints = @UniqueConstraint(name = "volunteer_project_unq", columnNames = {"project", "volunteer"}))
+@Table(uniqueConstraints = @UniqueConstraint(name = "volunteer_project_unq", columnNames = {"project_id", "volunteer_id"}))
 @Getter
 public class Participation {
     @Id
@@ -24,12 +24,14 @@ public class Participation {
     @Setter
     private ParticipationStatus participationStatus;
 
-    @ManyToOne(optional = false)
     @Setter
+    @ManyToOne()
+    @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
     @ManyToOne(optional = false)
     @Setter
+    @JoinColumn(name = "volunteer_id")
     private Volunteer volunteer;
 
     private LocalDateTime createdAt;

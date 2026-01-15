@@ -21,6 +21,8 @@ public class LocationService {
     }
 
     public Location createLocation(LocationDto locationDto){
+        if(locationDto == null)
+            return null;
         Location location = new Location(locationDto);
        return createLocation(location);
     }

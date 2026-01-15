@@ -1,15 +1,16 @@
 package com.backend.givr.organization.security;
 
-import com.backend.givr.shared.oauth.AuthProvider;
-import com.backend.givr.volunteer.security.VolunteerDetails;
+import com.backend.givr.shared.exceptions.DuplicateAccountException;
+import com.backend.givr.shared.exceptions.IllegalOperationException;
+import com.backend.givr.shared.oauth.AuthProviderType;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrganizationDetailsService implements UserDetailsService {
@@ -20,8 +21,8 @@ public class OrganizationDetailsService implements UserDetailsService {
         return repo.findByEmail(username).orElseThrow(()->new UsernameNotFoundException("Invalid credentials"));
     }
 
-    public OrganizationDetails loadUserByProvider(String providerId, AuthProvider provider){
-        return repo.findByAuthProviderAndProviderId(providerId, AuthProvider.GOOGLE).orElseThrow(()-> new UsernameNotFoundException("Invalid credentials"));
+    public OrganizationDetails loadUserByProvider(String providerId, AuthProviderType provider){
+        return repo.findByProviderIdAndAuthProvider(providerId, AuthProviderType.GOOGLE).orElseThrow(()-> new UsernameNotFoundException("Invalid credentials"));
     }
 
     public void save(OrganizationDetails details){
@@ -34,5 +35,17 @@ public class OrganizationDetailsService implements UserDetailsService {
         OrganizationDetails organizationDetails = loadUserByUsername(email);
         organizationDetails.setPassword(newPassword);
         repo.save(organizationDetails);
+    }
+    @Transactional
+    public void updateEmail (@Email String newEmail, String oldEmail){
+        OrganizationDetails details = loadUserByUsername(oldEmail);
+        if(details.getAuthProvider() == AuthProviderType.LOCAL)
+            details.setEmail(newEmail);
+        else
+            throw new IllegalOperationException("Cannot change email, social media sign in");
+    }
+
+    public boolean emailExist(String email){
+        return repo.existsByEmail(email);
     }
 }

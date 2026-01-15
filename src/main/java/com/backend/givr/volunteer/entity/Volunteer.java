@@ -25,7 +25,7 @@ public class Volunteer {
 
     private String phoneNumber;
     @ManyToOne
-    @JoinColumn(name = "location_id", nullable = false)
+    @JoinColumn(name = "location_id")
     private Location location;
 
     private Boolean emailIsVerified;
@@ -38,7 +38,7 @@ public class Volunteer {
     @JoinTable(name = "volunteer_skills", joinColumns = @JoinColumn(name = "volunteer_id"), inverseJoinColumns = @JoinColumn(name = "skill_id"))
     private Set<Skill> skills = new HashSet<>();
 
-
+    private Boolean profileCompleted;
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
 
