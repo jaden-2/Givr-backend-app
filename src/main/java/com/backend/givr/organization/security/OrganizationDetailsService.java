@@ -1,12 +1,9 @@
 package com.backend.givr.organization.security;
 
-import com.backend.givr.shared.exceptions.DuplicateAccountException;
 import com.backend.givr.shared.exceptions.IllegalOperationException;
-import com.backend.givr.shared.oauth.AuthProviderType;
-import jakarta.validation.ConstraintViolationException;
+import com.backend.givr.shared.enums.AuthProviderType;
 import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -21,9 +18,6 @@ public class OrganizationDetailsService implements UserDetailsService {
         return repo.findByEmail(username).orElseThrow(()->new UsernameNotFoundException("Invalid credentials"));
     }
 
-    public OrganizationDetails loadUserByProvider(String providerId, AuthProviderType provider){
-        return repo.findByProviderIdAndAuthProvider(providerId, AuthProviderType.GOOGLE).orElseThrow(()-> new UsernameNotFoundException("Invalid credentials"));
-    }
 
     public void save(OrganizationDetails details){
         if(details == null)

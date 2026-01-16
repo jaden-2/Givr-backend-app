@@ -1,7 +1,7 @@
 package com.backend.givr.volunteer.security;
 
 import com.backend.givr.shared.interfaces.SecurityDetails;
-import com.backend.givr.shared.oauth.AuthProviderType;
+import com.backend.givr.shared.enums.AuthProviderType;
 import com.backend.givr.volunteer.entity.Volunteer;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

@@ -2,23 +2,17 @@ package com.backend.givr.shared.jwt;
 
 import com.backend.givr.shared.dtos.AuthDTO;
 import com.backend.givr.shared.interfaces.SecurityDetails;
-import com.backend.givr.shared.oauth.AuthProviderType;
 import com.backend.givr.shared.service.TokenIdService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.boot.web.server.Cookie;
-import org.springframework.http.ResponseCookie;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;

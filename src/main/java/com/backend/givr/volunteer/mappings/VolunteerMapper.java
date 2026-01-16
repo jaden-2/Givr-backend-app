@@ -25,6 +25,7 @@ public interface VolunteerMapper {
     Volunteer toVolunteer(CreateVolunteerRequestDto dto);
 
     @Mapping(target = "skills", ignore = true)
+    @Mapping(target = "location", ignore = true)
     void updateVolunteer(UpdateVolunteerDto updatedVolunteer, @MappingTarget Volunteer volunteer);
 
 

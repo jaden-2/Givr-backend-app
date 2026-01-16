@@ -20,6 +20,6 @@ public class UpdateVolunteerDto {
     @Size(min = 11, max = 13)
     private String phoneNumber;
     private List<String> skills;
-    private Location location;
+    private LocationDto location;
     private String email;
 }

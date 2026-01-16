@@ -10,7 +10,7 @@ import com.backend.givr.shared.dtos.PasswordUpdateDto;
 import com.backend.givr.shared.dtos.ProjectApplicationForm;
 import com.backend.givr.shared.enums.OtpPurpose;
 import com.backend.givr.shared.interfaces.SecurityDetails;
-import com.backend.givr.shared.oauth.AuthProviderType;
+import com.backend.givr.shared.enums.AuthProviderType;
 import com.backend.givr.shared.otp.OtpDto;
 import com.backend.givr.shared.service.LogoutService;
 import com.backend.givr.volunteer.dtos.*;
@@ -18,14 +18,11 @@ import com.backend.givr.volunteer.security.VolunteerDetails;
 import com.backend.givr.volunteer.service.VolunteerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Duration;
 import java.util.List;
 
 @RestController

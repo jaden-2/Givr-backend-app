@@ -7,7 +7,7 @@ import com.backend.givr.volunteer.entity.Volunteer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +22,7 @@ public interface ProjectRepo extends JpaRepository<Project, Long> {
             SELECT p from Project p
             WHERE p.deadline < :today
             """)
-    List<Project> findExpiredProjects(LocalDateTime today);
+    List<Project> findExpiredProjects(LocalDate today);
 
     @Query("""
     SELECT p

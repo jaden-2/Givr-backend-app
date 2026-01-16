@@ -40,6 +40,9 @@ spring:
 givr:
   allowed:
     origins: ${ALLOWED_ORIGINS}
+springdoc:
+  api-docs:
+    path: api-docs
 client:
   app:
     baseUrl: ${CLIENT_BASE_URL}
