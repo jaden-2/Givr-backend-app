@@ -1,7 +1,7 @@
 package com.backend.givr.volunteer.oauth2;
 
 import com.backend.givr.shared.jwt.GivrCookie;
-import com.backend.givr.shared.oauth.AuthProviderType;
+import com.backend.givr.shared.enums.AuthProviderType;
 import com.backend.givr.volunteer.security.VolunteerDetails;
 import com.backend.givr.volunteer.security.VolunteerDetailsService;
 import jakarta.servlet.ServletException;

@@ -2,7 +2,7 @@ package com.backend.givr.organization.security;
 
 import com.backend.givr.organization.entity.Organization;
 import com.backend.givr.shared.interfaces.SecurityDetails;
-import com.backend.givr.shared.oauth.AuthProviderType;
+import com.backend.givr.shared.enums.AuthProviderType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.Getter;

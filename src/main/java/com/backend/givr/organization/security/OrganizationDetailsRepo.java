@@ -1,6 +1,5 @@
 package com.backend.givr.organization.security;
 
-import com.backend.givr.shared.oauth.AuthProviderType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
