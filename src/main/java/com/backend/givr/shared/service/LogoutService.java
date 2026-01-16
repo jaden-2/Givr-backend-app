@@ -3,6 +3,7 @@ package com.backend.givr.shared.service;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.server.Cookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -25,15 +26,15 @@ public class LogoutService {
         service.revokeTokens(authUser.getUsername());
 
         headers.add(HttpHeaders.SET_COOKIE, ResponseCookie.from("RefreshToken")
-                .sameSite("Strict")
+                .sameSite(Cookie.SameSite.LAX.attributeValue())
+                .path("/")
                 .httpOnly(true)
                 .secure(true)
-                .path(String.format("/%s/api/auth", apiVersion))
                 .maxAge(Duration.ZERO)
                 .build().toString());
 
         headers.add(HttpHeaders.SET_COOKIE, ResponseCookie.from("AccessToken")
-                .sameSite("None")
+                .sameSite(Cookie.SameSite.LAX.attributeValue())
                 .httpOnly(true)
                 .secure(true)
                 .path("/")

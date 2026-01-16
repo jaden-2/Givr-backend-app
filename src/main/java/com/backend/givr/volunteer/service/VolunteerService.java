@@ -148,8 +148,7 @@ public class VolunteerService {
         Set<Skill> skills = skillService.updateSkills(updatedVolunteerDto.getSkills());
         mapper.updateVolunteer(updatedVolunteerDto, volunteer);
         volunteer.setSkills(skills);
-        String email = details.getUsername();
-
+        volunteer.setProfileCompleted(true);
         if(updatedVolunteerDto.getEmail() != null && !updatedVolunteerDto.getEmail().equals(details.getUsername())){
             if(details.getProviderType() == AuthProviderType.LOCAL){
                 VolunteerDetails volunteerDetails = detailsService.loadUserByUsername(details.getUsername());
