@@ -4,16 +4,13 @@ spring:
   application:
     name: givr
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: admin
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hibernate:
       dialect: org.hibernate.dialect.PostgreSQLDialect
   jpa:
-    properties:
-      hibernate:
-        default_schema: givr
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -24,28 +21,30 @@ spring:
         registration:
           google-org:
             provider: google
-            client-id: REMOVED_SECRET
-            client-secret: REMOVED_SECRET
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - openid
               - profile
               - email
-            redirect-uri: "http://127.0.0.1:8080/v1/api/organization/oauth2/code/google"
+            redirect-uri: "{baseUrl}/v1/api/organization/oauth2/code/google"
           google-volunteer:
             provider: google
-            client-id: REMOVED_SECRET
-            client-secret: REMOVED_SECRET
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - openid
               - profile
               - email
             redirect-uri: "{baseUrl}/v1/api/volunteer/oauth2/code/google"
-
+givr:
+  allowed:
+    origins: ${ALLOWED_ORIGINS}
 client:
   app:
-    baseUrl: "http://127.0.0.1:5173"
+    baseUrl: ${CLIENT_BASE_URL}
 jwt:
-  secret: REMOVED_SECRET
+  secret: ${JWT_SECRET}
 OTP:
-  SECRETS: REMOVED_SECRET
-RESEND_API_TOKEN: REMOVED_SECRET
+  SECRETS: ${OTP_SECRET}
+RESEND_API_TOKEN: ${RESEND_API_KEY}

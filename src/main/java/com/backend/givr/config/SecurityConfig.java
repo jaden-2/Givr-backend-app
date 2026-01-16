@@ -57,6 +57,8 @@ public class SecurityConfig {
 
     @Value("${api.version}")
     private String apiVersion;
+    @Value("${givr.allowed.origins}")
+    private List<String> allowedOrigins;
 
     @Autowired
     private OrganizationOAuthService organizationOathService;
@@ -198,7 +200,7 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration config = new CorsConfiguration();
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        config.setAllowedOrigins(List.of("http://localhost:5174", "http://127.0.0.1:5174", "http://127.0.0.1:5173", "http://localhost:5173"));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", HttpMethod.PATCH.name(), "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
