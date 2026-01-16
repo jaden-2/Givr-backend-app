@@ -32,7 +32,7 @@ public class OrganizationOAuthService implements OAuth2UserService<OidcUserReque
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         OidcUser user = delegate.loadUser(userRequest);
-        Optional<OrganizationDetails> details = detailsRepo.findByProviderIdAndAuthProvider(user.getSubject(), AuthProviderType.GOOGLE);
+        Optional<OrganizationDetails> details = detailsRepo.findByEmail(user.getEmail());
 
         if(details.isEmpty()){
             createOrganization(user);

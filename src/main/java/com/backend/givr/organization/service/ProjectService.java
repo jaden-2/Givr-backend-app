@@ -114,7 +114,7 @@ public class ProjectService {
     @Transactional
     public void updateProjectStatusOnDeadline(){
         LocalDate today = LocalDate.now(ZoneId.of("Africa/Lagos"));
-        List<Project> projects = repo.findExpiredProjects(today.atStartOfDay());
+        List<Project> projects = repo.findExpiredProjects(today);
 
         projects.forEach(project -> {
             if(project.shouldClose(today.atStartOfDay()))

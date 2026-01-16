@@ -10,8 +10,6 @@ import java.util.Optional;
 public interface OrganizationDetailsRepo extends JpaRepository<OrganizationDetails, Long> {
     Optional<OrganizationDetails> findByEmail(String email);
 
-    Optional<OrganizationDetails> findByProviderIdAndAuthProvider(String subject, AuthProviderType authProvider);
-
     boolean existsByEmail(String email);
 
 }

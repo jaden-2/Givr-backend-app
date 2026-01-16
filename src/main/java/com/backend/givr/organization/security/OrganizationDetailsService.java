@@ -21,9 +21,6 @@ public class OrganizationDetailsService implements UserDetailsService {
         return repo.findByEmail(username).orElseThrow(()->new UsernameNotFoundException("Invalid credentials"));
     }
 
-    public OrganizationDetails loadUserByProvider(String providerId, AuthProviderType provider){
-        return repo.findByProviderIdAndAuthProvider(providerId, AuthProviderType.GOOGLE).orElseThrow(()-> new UsernameNotFoundException("Invalid credentials"));
-    }
 
     public void save(OrganizationDetails details){
         if(details == null)

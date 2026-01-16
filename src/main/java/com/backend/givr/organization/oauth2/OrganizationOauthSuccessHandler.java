@@ -24,17 +24,14 @@ public class OrganizationOauthSuccessHandler implements AuthenticationSuccessHan
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
         assert oidcUser != null;
-        OrganizationDetails organizationDetails = service.loadUserByProvider(oidcUser.getSubject(), AuthProviderType.GOOGLE);
+        OrganizationDetails organizationDetails = service.loadUserByUsername(oidcUser.getEmail());
 
         if(organizationDetails.getAuthProvider() != AuthProviderType.GOOGLE){
-            response.sendError(HttpServletResponse.SC_CONFLICT);
-            response.sendRedirect(String.format("%s/signin/organization?error=Account was registered with username/password", appBaseUrl));
-            response.getWriter().flush();
-        }else{
-            givrCookie.addCookieToResponse(organizationDetails, response);
-            response.sendRedirect(String.format("%s/organization", appBaseUrl));
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().flush();
+            response.sendRedirect(String.format("%s/signin/organization?error=Account was registered with a different sign in method, sign in username & password instead", appBaseUrl));
+            return;
         }
+
+        givrCookie.addCookieToResponse(organizationDetails, response);
+        response.sendRedirect(String.format("%s/organization", appBaseUrl));
     }
 }
