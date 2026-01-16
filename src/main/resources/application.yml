@@ -1,5 +1,11 @@
 api:
   version: v1
+server:
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: true
 spring:
   application:
     name: givr
