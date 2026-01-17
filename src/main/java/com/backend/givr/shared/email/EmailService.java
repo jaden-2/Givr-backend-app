@@ -68,29 +68,29 @@ public class EmailService {
 
     public void sendWelcomeEmail(String firstname, String volunteerDashboardUrl, String email){
         String html = emailTemplateService.volunteerWelcomeEmail(firstname, volunteerDashboardUrl);
-        sendEmail(html, email);
+        sendEmail(html, email, "Welcome to Givr");
     }
 
     public void sendApplicationSubmittedEmail(String firstname,String projectName, String organizationName, String address, String recipient){
         String html = emailTemplateService.applicationSubmittedEmail(firstname, projectName, organizationName, address);
-        sendEmail(html, recipient);
+        sendEmail(html, recipient, "Project application submitted");
     }
 
     public void sendApplicationApproved(String firstname,String projectName, String organizationName, String address, String recipient){
         String html = emailTemplateService.applicationApproved(firstname, projectName, organizationName, address);
-        sendEmail(html, recipient);
+        sendEmail(html, recipient, "Project application approved");
     }
 
     public void sendApplicationRejected(String firstname,String projectName, String organizationName, String recipient){
         String html = emailTemplateService.applicationRejected(firstname, projectName, organizationName);
-        sendEmail(html, recipient);
+        sendEmail(html, recipient, "Project application rejected");
     }
 
-    private void sendEmail (String html, String recipient){
+    private void sendEmail (String html, String recipient, String subject){
         CreateEmailOptions params = CreateEmailOptions.builder()
                 .from("Givr Notification <no-reply@notifications.givr.ng>")
                 .to(recipient)
-                .subject("GIVR OTP Request")
+                .subject(subject)
                 .html(html)
                 .build();
         try {
