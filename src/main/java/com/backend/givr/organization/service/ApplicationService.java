@@ -7,6 +7,7 @@ import com.backend.givr.organization.entity.ProjectApplication;
 import com.backend.givr.organization.repo.ProjectApplicationRepo;
 import com.backend.givr.shared.dtos.ProjectApplicationForm;
 import com.backend.givr.shared.dtos.VolunteerApplicationDto;
+import com.backend.givr.shared.email.EmailService;
 import com.backend.givr.shared.enums.ApplicationStatus;
 import com.backend.givr.shared.exceptions.IllegalOperationException;
 import com.backend.givr.shared.exceptions.MaxApplicantsReachedException;
@@ -29,20 +30,27 @@ public class ApplicationService {
     private ProjectApplicationRepo repo;
     @PersistenceContext
     private EntityManager em;
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private ParticipationService participationService;
 
-    public ProjectApplication apply(Volunteer volunteer, ProjectApplicationForm applicationForm){
+    public ProjectApplication apply(Volunteer volunteer, ProjectApplicationForm applicationForm, String email){
         Project project = em.getReference(Project.class, applicationForm.projectId());
         if(LocalDateTime.now().isAfter(project.getDeadline().atTime(23, 59, 59)))
             throw new ProjectDeadlinePastException("Cannot apply for a project past it's application period");
 
-        var application = new ProjectApplication(project, volunteer);
+        var application = new ProjectApplication(project, volunteer, email);
         application.setApplicationReason(application.getApplicationReason());
         application.setAvailableDays(application.getAvailableDays());
         try{
-            return repo.save(application);
+            var projectApplication =  repo.save(application);
+
+            emailService.sendApplicationSubmittedEmail(volunteer.getFirstname(), project.getTitle(), project.getOrganization().getOrganizationName(),
+                    String.format("%s,%s", project.getLocation().getLga(), project.getLocation().getState()), email);
+
+            return projectApplication;
         }catch (DataIntegrityViolationException ignored){
             throw new DataIntegrityViolationException("Cannot apply to a project more than once");
         }
@@ -60,6 +68,18 @@ public class ApplicationService {
             throw new IllegalOperationException("Cannot change status to applied");
         application.setStatus(status);
         repo.save(application);
+
+        switch (status){
+            case APPROVED -> {
+                String address = String.format("%s, %s", project.getLocation().getLga(), project.getLocation().getState());
+                emailService.sendApplicationApproved(application.getVolunteer().getFirstname(), project.getTitle(),
+                        project.getOrganization().getOrganizationName(),address, application.getEmail());
+            }
+            case REJECTED -> {
+                emailService.sendApplicationRejected(application.getVolunteer().getFirstname(), project.getTitle(),
+                        project.getOrganization().getOrganizationName(), application.getEmail());
+            }
+        }
     }
 
     @Transactional

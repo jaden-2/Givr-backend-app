@@ -84,13 +84,13 @@ public class OrganizationController {
 
     @PatchMapping("/projects/application/{id}/accept")
     public ResponseEntity<Void> acceptApplication(@AuthenticationPrincipal SecurityDetails details, @PathVariable("id") Long id){
-        applicationService.changeApplicationStatus(id, ApplicationStatus.APPROVED);
+        service.approveApplication(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/projects/application/{id}/reject")
     public ResponseEntity<Void> rejectApplication(@PathVariable("id") Long id){
-        applicationService.changeApplicationStatus(id, ApplicationStatus.REJECTED);
+        service.rejectApplication(id);
         return ResponseEntity.noContent().build();
     }
 

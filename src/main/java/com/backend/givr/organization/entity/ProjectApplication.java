@@ -35,17 +35,19 @@ public class ProjectApplication {
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
 
+    private String email;
     private ZonedDateTime appliedAt;
     private ZonedDateTime updatedAt;
 
     private String applicationReason;
     private String availableDays;
 
-    public ProjectApplication(Project project, Volunteer volunteer){
+    public ProjectApplication(Project project, Volunteer volunteer, String email){
         this.project = project;
         this.volunteer = volunteer;
         this.status = ApplicationStatus.APPLIED;
         this.organization = project.getOrganization();
+        this.email = email;
     }
 
     @PrePersist

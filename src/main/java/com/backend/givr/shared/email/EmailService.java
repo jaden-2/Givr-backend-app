@@ -12,6 +12,9 @@ import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
 import com.resend.services.emails.model.CreateEmailResponse;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 public class EmailService {
 
     @Value("${RESEND_API_TOKEN}")
@@ -30,6 +34,8 @@ public class EmailService {
     @Autowired
     private EmailTemplateService emailTemplateService;
     private Resend resend;
+
+    private final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     @PostConstruct
     private void setResend(){
@@ -53,11 +59,44 @@ public class EmailService {
 
         try {
             CreateEmailResponse data = resend.emails().send(params);
-            System.out.println(data.getId());
             otpService.markAsSent(otp, data.getId());
         } catch (ResendException e) {
             otpService.deleteOtp(otp);
             throw new FailedToSendOTPException(e.getLocalizedMessage());
+        }
+    }
+
+    public void sendWelcomeEmail(String firstname, String volunteerDashboardUrl, String email){
+        String html = emailTemplateService.volunteerWelcomeEmail(firstname, volunteerDashboardUrl);
+        sendEmail(html, email);
+    }
+
+    public void sendApplicationSubmittedEmail(String firstname,String projectName, String organizationName, String address, String recipient){
+        String html = emailTemplateService.applicationSubmittedEmail(firstname, projectName, organizationName, address);
+        sendEmail(html, recipient);
+    }
+
+    public void sendApplicationApproved(String firstname,String projectName, String organizationName, String address, String recipient){
+        String html = emailTemplateService.applicationApproved(firstname, projectName, organizationName, address);
+        sendEmail(html, recipient);
+    }
+
+    public void sendApplicationRejected(String firstname,String projectName, String organizationName, String recipient){
+        String html = emailTemplateService.applicationRejected(firstname, projectName, organizationName);
+        sendEmail(html, recipient);
+    }
+
+    private void sendEmail (String html, String recipient){
+        CreateEmailOptions params = CreateEmailOptions.builder()
+                .from("Givr Notification <no-reply@notifications.givr.ng>")
+                .to(recipient)
+                .subject("GIVR OTP Request")
+                .html(html)
+                .build();
+        try {
+            CreateEmailResponse data = resend.emails().send(params);
+        } catch (ResendException e) {
+            logger.error("Error while sending email to {}, {}", recipient, e.getLocalizedMessage());
         }
     }
 }

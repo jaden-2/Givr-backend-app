@@ -68,7 +68,7 @@ public class VolunteerController {
 
     @PostMapping("/projects/apply")
     public ResponseEntity<Void> applyForProject(@AuthenticationPrincipal VolunteerDetails volunteerDetails, @RequestBody @Valid ProjectApplicationForm applicationForm){
-        service.apply(volunteerDetails.getId(), applicationForm);
+        service.apply(volunteerDetails, applicationForm);
         return ResponseEntity.ok().build();
     }
 

@@ -37,6 +37,7 @@ import jakarta.validation.constraints.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -89,6 +90,9 @@ public class VolunteerService {
     @PersistenceContext
     private EntityManager manager;
 
+    @Value("${client.app.baseUrl}")
+    private String clientAppBaseUrl;
+
     public Volunteer getVolunteer(String id){
         return repo.findById(id).orElseThrow();
     }
@@ -120,11 +124,12 @@ public class VolunteerService {
         detailsService.save(details);
     }
 
-    @Transactional
+
     public Volunteer createAccount(CreateVolunteerRequestDto volunteerDto){
         try{
             var volunteer = createVolunteer(volunteerDto);
             createAuthPrincipal(volunteerDto, volunteer);
+            emailService.sendWelcomeEmail(volunteerDto.getFirstname(),String.format("%s/signin/volunteer", clientAppBaseUrl) , volunteerDto.getEmail());
             return volunteer;
         }catch (IllegalStateException e){
             logger.error("Failed to create account for user: {}", e.getLocalizedMessage());
@@ -132,11 +137,9 @@ public class VolunteerService {
         }
     }
 
-    @Transactional
     public Volunteer updateSkills(Volunteer volunteer, List<String> skills){
         var updateSkills = skillService.updateSkills(skills);
         volunteer.setSkills(updateSkills);
-
        return repo.save(volunteer);
     }
 
@@ -160,9 +163,9 @@ public class VolunteerService {
         return mapper.toProfile(volunteer);
     }
 
-    public void apply(String id, @Valid ProjectApplicationForm applicationForm) {
-        Volunteer volunteer = manager.getReference(Volunteer.class, id);
-        applicationService.apply(volunteer, applicationForm);
+    public void apply(SecurityDetails details, @Valid ProjectApplicationForm applicationForm) {
+        Volunteer volunteer = manager.getReference(Volunteer.class, details.getId());
+        applicationService.apply(volunteer, applicationForm, details.getUsername());
     }
 
     public List<ParticipationDto> getMyVolunteering(SecurityDetails details){
