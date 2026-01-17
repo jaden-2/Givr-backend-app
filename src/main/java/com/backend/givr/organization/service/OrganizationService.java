@@ -79,7 +79,7 @@ public class OrganizationService {
             var savedOrganization = repo.save(organization);
             OrganizationDetails details = new OrganizationDetails(organizationDto.getEmail(), encoder.encode(organizationDto.getPassword()), savedOrganization);
             service.save(details);
-            emailService.sendOrganizationWelcomeEmail(savedOrganization.getContactFirstname(), String.format("%s/organization"), details.getUsername() );
+            emailService.sendOrganizationWelcomeEmail(savedOrganization.getContactFirstname(), String.format("%s/organization", clientAppBaseUrl), details.getUsername() );
             return savedOrganization;
         }catch (DataIntegrityViolationException | ConstraintViolationException ignored){
             throw new DuplicateAccountException("An organization with the same cac registration number or email already exists ");

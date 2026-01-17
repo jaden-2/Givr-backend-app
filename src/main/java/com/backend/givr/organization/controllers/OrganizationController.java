@@ -37,7 +37,7 @@ public class OrganizationController {
     private LogoutService logoutService;
 
     @PostMapping("/auth/signup")
-    public ResponseEntity<Void> createVolunteerAccount(@RequestBody @Valid CreateOrganizationDto createOrganizationDto){
+    public ResponseEntity<Void> createOrganizationAccount(@RequestBody @Valid CreateOrganizationDto createOrganizationDto){
         service.createOrganization(createOrganizationDto);
         return ResponseEntity.noContent().build();
     }
