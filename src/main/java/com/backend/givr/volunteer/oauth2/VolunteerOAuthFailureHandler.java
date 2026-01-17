@@ -14,8 +14,6 @@ public class VolunteerOAuthFailureHandler implements AuthenticationFailureHandle
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        response.sendRedirect("http://127.0.0.1:5173/signin/volunteer");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().flush();
+        response.sendRedirect(String.format("%s/signin/volunteer", appBaseUrl));
     }
 }
