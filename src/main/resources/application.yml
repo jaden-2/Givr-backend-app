@@ -10,15 +10,15 @@ spring:
   application:
     name: givr
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: admin
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hibernate:
       dialect: org.hibernate.dialect.PostgreSQLDialect
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
 
   security:
@@ -51,9 +51,9 @@ springdoc:
     path: api-docs
 client:
   app:
-    baseUrl: ${CLIENT_APP_BASEURL}
+    baseUrl: ${CLIENT_BASE_URL}
 jwt:
   secret: ${JWT_SECRET}
 OTP:
   SECRETS: ${OTP_SECRET}
-RESEND_API_TOKEN: ${RESEND_API_TOKEN}
+RESEND_API_TOKEN: ${RESEND_API_KEY}
