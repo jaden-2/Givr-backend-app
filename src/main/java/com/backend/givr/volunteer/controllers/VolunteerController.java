@@ -3,7 +3,6 @@ package com.backend.givr.volunteer.controllers;
 import com.backend.givr.organization.dtos.OrganizationDto;
 import com.backend.givr.organization.dtos.ProjectResponseDto;
 import com.backend.givr.organization.service.OrganizationService;
-import com.backend.givr.organization.service.ParticipationService;
 import com.backend.givr.organization.service.ProjectService;
 import com.backend.givr.shared.dtos.ParticipationDto;
 import com.backend.givr.shared.dtos.PasswordUpdateDto;
@@ -34,16 +33,13 @@ public class VolunteerController {
     private OrganizationService organizationService;
 
     @Autowired
-    private ParticipationService participationService;
-
-    @Autowired
     private LogoutService logoutService;
 
     @Autowired
     private ProjectService projectService;
     @PostMapping("/auth/signup")
     public ResponseEntity<Void> createVolunteerAccount(@RequestBody @Validated CreateVolunteerRequestDto payload){
-        var createdVolunteer = service.createAccount(payload);
+        service.createAccount(payload);
         return ResponseEntity.noContent().build();
     }
 
