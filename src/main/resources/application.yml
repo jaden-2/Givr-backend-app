@@ -2,14 +2,17 @@ api:
   version: v1
 server:
   forward-headers-strategy: framework
-
+  servlet:
+    session:
+      cookie:
+        secure: true
 spring:
   application:
     name: givr
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: admin
     driver-class-name: org.postgresql.Driver
     hibernate:
       dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -48,7 +51,7 @@ springdoc:
     path: api-docs
 client:
   app:
-    baseUrl: ${CLIENT_BASE_URL}
+    baseUrl: ${CLIENT_APP_BASEURL}
 jwt:
   secret: ${JWT_SECRET}
 OTP:

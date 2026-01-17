@@ -4,11 +4,13 @@ import com.backend.givr.organization.entity.Organization;
 import com.backend.givr.organization.repo.OrganizationRepo;
 import com.backend.givr.organization.security.OrganizationDetails;
 import com.backend.givr.organization.security.OrganizationDetailsRepo;
+import com.backend.givr.shared.email.EmailService;
 import com.backend.givr.shared.enums.VerificationStatus;
 import com.backend.givr.shared.exceptions.DuplicateAccountException;
 import com.backend.givr.shared.enums.AuthProviderType;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -28,6 +30,12 @@ public class OrganizationOAuthService implements OAuth2UserService<OidcUserReque
     private OrganizationDetailsRepo detailsRepo;
 
     private final OidcUserService delegate = new OidcUserService();
+
+    @Autowired
+    private EmailService emailService;
+
+    @Value("${client.app.baseUrl}")
+    private String clientBaseUrl;
 
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
@@ -55,6 +63,7 @@ public class OrganizationOAuthService implements OAuth2UserService<OidcUserReque
             var savedOrganization = repo.save(organization);
             OrganizationDetails details = new OrganizationDetails( user.getSubject(), user.getEmail(), AuthProviderType.GOOGLE, savedOrganization);
             detailsRepo.save(details);
+            emailService.sendOrganizationWelcomeEmail(organization.getContactFirstname(), String.format("%s/signin/organization", clientBaseUrl), user.getEmail());
         }catch (DataIntegrityViolationException | ConstraintViolationException ignored){
             throw new DuplicateAccountException("Organization violates constraints");
         }

@@ -70,6 +70,10 @@ public class EmailService {
         String html = emailTemplateService.volunteerWelcomeEmail(firstname, volunteerDashboardUrl);
         sendEmail(html, email, "Welcome to Givr");
     }
+    public void sendOrganizationWelcomeEmail(String firstname, String organizationDashboardUrl, String email){
+        String html = emailTemplateService.organizationWelcomeEmail(firstname, organizationDashboardUrl);
+        sendEmail(html, email, "Welcome to Givr");
+    }
 
     public void sendApplicationSubmittedEmail(String firstname,String projectName, String organizationName, String address, String recipient){
         String html = emailTemplateService.applicationSubmittedEmail(firstname, projectName, organizationName, address);

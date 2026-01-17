@@ -27,6 +27,14 @@ public class EmailTemplateService {
         return engine.process("email/volunteerWelcome", context);
     }
 
+    public String organizationWelcomeEmail(String firstname, String organizationDashboard){
+        Context context = new Context();
+        context.setVariable("firstname", firstname);
+        context.setVariable("clientAppUrl", organizationDashboard);
+        return engine.process("email/organizationWelcome", context);
+    }
+
+
     public String applicationSubmittedEmail(String firstname,String projectName, String organizationName, String address){
         Context context = new Context();
         context.setVariable("firstname", firstname);
