@@ -49,6 +49,7 @@ public class Organization {
 
     private String address;
 
+    @Column(length = 500)
     private String description;
 
     private String website;

@@ -61,13 +61,7 @@ public class ApplicationService {
         repo.deleteByProjectAndVolunteer(project, volunteer);
     }
 
-    public void changeApplicationStatus(Long projectId, Volunteer volunteer, ApplicationStatus status){
-        Project project = em.getReference(Project.class, projectId);
-        ProjectApplication application = repo.findByProjectAndVolunteer(project, volunteer).orElseThrow();
-        if(status == ApplicationStatus.APPLIED)
-            throw new IllegalOperationException("Cannot change status to applied");
-        application.setStatus(status);
-        repo.save(application);
+    public void notifyApplicationChange(ProjectApplication application, Project project, ApplicationStatus status){
 
         switch (status){
             case APPROVED -> {
@@ -100,8 +94,8 @@ public class ApplicationService {
             participationService.createParticipation(project, application.getVolunteer());
 
         application.setStatus(status);
-
         repo.save(application);
+        notifyApplicationChange(application, project, status);
     }
 
     private void checkNull(Project project, Volunteer volunteer){
