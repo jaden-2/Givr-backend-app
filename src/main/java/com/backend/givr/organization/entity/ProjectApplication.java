@@ -39,6 +39,7 @@ public class ProjectApplication {
     private ZonedDateTime appliedAt;
     private ZonedDateTime updatedAt;
 
+    @Column(length = 500)
     private String applicationReason;
     private String availableDays;
 

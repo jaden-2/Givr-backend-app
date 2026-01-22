@@ -30,4 +30,8 @@ public class VolunteerDetailsService implements UserDetailsService {
         volunteerDetails.setPassword(password);
         repo.save(volunteerDetails);
     }
+
+    public boolean userExistsByEmail(String email) {
+        return repo.existsByEmail(email);
+    }
 }

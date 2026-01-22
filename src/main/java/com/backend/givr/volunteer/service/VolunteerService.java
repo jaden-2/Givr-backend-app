@@ -175,7 +175,10 @@ public class VolunteerService {
 
     @Async
     public void requestOtp(String email, OtpPurpose purpose) {
-        emailService.sendOtpTo(email, AccountType.VOLUNTEER, purpose);
+        if(detailsService.userExistsByEmail(email))
+            emailService.sendOtpTo(email, AccountType.VOLUNTEER, purpose);
+        else
+            throw new IllegalOperationException("User does not have an account");
     }
 
     public void confirmEmail(SecurityDetails details, @Email String otp) {

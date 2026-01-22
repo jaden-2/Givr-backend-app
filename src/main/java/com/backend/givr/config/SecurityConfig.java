@@ -95,13 +95,13 @@ public class SecurityConfig {
         JwtValidationFilter validationFilter = new JwtValidationFilter(jwtUtil, volunteerDetailsService, organizationDetailsService);
 
         return httpSecurity
-            .securityMatcher("/v1/api/volunteer/**")
-            .cors(Customizer.withDefaults())
-            .authorizeHttpRequests(request->{
-            request.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
-            request.requestMatchers(HttpMethod.POST, "/v1/api/volunteer/auth/**").permitAll();
-            request.anyRequest().hasAuthority("VOLUNTEER");
-        })
+                .securityMatcher("/v1/api/volunteer/**")
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(request->{
+                    request.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+                    request.requestMatchers(HttpMethod.POST, "/v1/api/volunteer/auth/**").permitAll();
+                    request.anyRequest().hasAuthority("VOLUNTEER");
+                })
                 .authenticationProvider(volunteerDaoAuthProvider())
                 .addFilter(authFilter)
                 .addFilterBefore(validationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -183,11 +183,13 @@ public class SecurityConfig {
                 .build();
     }
 
+
     @Bean
     @Order(4)
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/**")
+                .securityMatcher("/v1/api/**")
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth->auth.anyRequest().permitAll())
                 .sessionManagement(SessionManagementConfigurer->{

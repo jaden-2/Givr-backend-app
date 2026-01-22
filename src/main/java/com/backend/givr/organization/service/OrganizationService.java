@@ -187,7 +187,10 @@ public class OrganizationService {
 
     @Async
     public void requestOtp( String email, OtpPurpose purpose) {
-        emailService.sendOtpTo(email, AccountType.ORGANIZATION, purpose);
+        if(service.emailExist(email))
+            emailService.sendOtpTo(email, AccountType.ORGANIZATION, purpose);
+        else
+            throw new IllegalOperationException("Account does not exist");
     }
 
     @Transactional
