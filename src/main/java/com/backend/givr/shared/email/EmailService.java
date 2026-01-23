@@ -66,10 +66,16 @@ public class EmailService {
         }
     }
 
+    public void sendPasswordChangeNotificationForOauthUser( String email){
+        String html = emailTemplateService.notificationForAuthUser();
+        sendEmail(html, email, "Password Reset");
+    }
+
     public void sendWelcomeEmail(String firstname, String volunteerDashboardUrl, String email){
         String html = emailTemplateService.volunteerWelcomeEmail(firstname, volunteerDashboardUrl);
         sendEmail(html, email, "Welcome to Givr");
     }
+
     public void sendOrganizationWelcomeEmail(String firstname, String organizationDashboardUrl, String email){
         String html = emailTemplateService.organizationWelcomeEmail(firstname, organizationDashboardUrl);
         sendEmail(html, email, "Welcome to Givr");
