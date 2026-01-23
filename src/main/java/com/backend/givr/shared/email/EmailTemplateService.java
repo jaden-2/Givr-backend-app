@@ -60,4 +60,10 @@ public class EmailTemplateService {
         context.setVariable("organizationName", organizationName);
         return engine.process("email/applicationRejected", context);
     }
+
+    public String notificationForAuthUser() {
+        Context context = new Context();
+        context.setVariable("firstname", "User");
+        return engine.process("email/oauthNotification", context);
+    }
 }

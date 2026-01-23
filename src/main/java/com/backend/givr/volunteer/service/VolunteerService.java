@@ -44,10 +44,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class VolunteerService {
@@ -175,8 +172,14 @@ public class VolunteerService {
 
     @Async
     public void requestOtp(String email, OtpPurpose purpose) {
-        if(detailsService.userExistsByEmail(email))
-            emailService.sendOtpTo(email, AccountType.VOLUNTEER, purpose);
+        Optional<VolunteerDetails> volunteer = detailsService.getDetails(email);
+        if(volunteer.isPresent()){
+            VolunteerDetails details = volunteer.get();
+            if(details.getAuthProvider() != AuthProviderType.GOOGLE)
+                emailService.sendOtpTo(email, AccountType.VOLUNTEER, purpose);
+            else
+                emailService.sendPasswordChangeNotificationForOauthUser(email);
+        }
         else
             throw new IllegalOperationException("User does not have an account");
     }

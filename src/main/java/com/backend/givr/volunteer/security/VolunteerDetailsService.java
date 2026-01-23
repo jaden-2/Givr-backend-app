@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class VolunteerDetailsService implements UserDetailsService {
@@ -19,6 +20,9 @@ public class VolunteerDetailsService implements UserDetailsService {
         return repo.findByEmail(username).orElseThrow(()->new UsernameNotFoundException("Invalid credentials"));
     }
 
+    public Optional<VolunteerDetails> getDetails(String username){
+        return repo.findByEmail(username);
+    }
     public void save(VolunteerDetails details){
         if(details==null)
             return;

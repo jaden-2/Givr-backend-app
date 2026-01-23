@@ -187,8 +187,14 @@ public class OrganizationService {
 
     @Async
     public void requestOtp( String email, OtpPurpose purpose) {
-        if(service.emailExist(email))
-            emailService.sendOtpTo(email, AccountType.ORGANIZATION, purpose);
+        Optional<OrganizationDetails> details = service.getDetails(email);
+        if(details.isPresent()) {
+            OrganizationDetails organizationDetails = details.get();
+            if(organizationDetails.getAuthProvider()!=AuthProviderType.GOOGLE)
+                emailService.sendOtpTo(email, AccountType.ORGANIZATION, purpose);
+            else
+                emailService.sendPasswordChangeNotificationForOauthUser(email);
+        }
         else
             throw new IllegalOperationException("Account does not exist");
     }

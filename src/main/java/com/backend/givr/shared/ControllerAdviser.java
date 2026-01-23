@@ -28,7 +28,7 @@ public class ControllerAdviser {
     }
 
     @ExceptionHandler(IllegalOperationException.class)
-    public ResponseEntity<String> handleIllegalOperation(CredentialsChangedException e){
+    public ResponseEntity<String> handleIllegalOperation(IllegalOperationException e){
         return ResponseEntity.badRequest().body(e.getLocalizedMessage());
     }
 
