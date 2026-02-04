@@ -1,7 +1,6 @@
-package com.backend.givr.shared;
+package com.backend.givr.shared.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

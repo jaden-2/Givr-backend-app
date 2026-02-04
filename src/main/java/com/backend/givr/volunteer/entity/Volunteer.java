@@ -1,7 +1,7 @@
 package com.backend.givr.volunteer.entity;
 
-import com.backend.givr.shared.Location;
-import com.backend.givr.shared.Skill;
+import com.backend.givr.shared.entity.Location;
+import com.backend.givr.shared.entity.Skill;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

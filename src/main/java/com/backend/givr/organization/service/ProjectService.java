@@ -5,7 +5,7 @@ import com.backend.givr.organization.dtos.ProjectResponseDto;
 import com.backend.givr.organization.entity.Organization;
 import com.backend.givr.organization.entity.Project;
 import com.backend.givr.organization.repo.ProjectRepo;
-import com.backend.givr.shared.Location;
+import com.backend.givr.shared.entity.Location;
 import com.backend.givr.shared.enums.ProjectStatus;
 import com.backend.givr.shared.exceptions.IllegalOperationException;
 import com.backend.givr.shared.exceptions.InconsistentProjectDatesException;

@@ -1,7 +1,7 @@
 package com.backend.givr.organization.entity;
 
-import com.backend.givr.shared.Location;
-import com.backend.givr.shared.Skill;
+import com.backend.givr.shared.entity.Location;
+import com.backend.givr.shared.entity.Skill;
 import com.backend.givr.shared.enums.ProjectStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;

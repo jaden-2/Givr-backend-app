@@ -8,7 +8,7 @@ import com.backend.givr.organization.entity.Project;
 import com.backend.givr.organization.entity.ProjectApplication;
 import com.backend.givr.organization.mappings.OrganizationMapper;
 import com.backend.givr.shared.dtos.ParticipationDto;
-import com.backend.givr.shared.Skill;
+import com.backend.givr.shared.entity.Skill;
 import org.mapstruct.*;
 
 import java.time.LocalDate;

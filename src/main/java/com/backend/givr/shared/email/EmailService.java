@@ -109,4 +109,8 @@ public class EmailService {
             logger.error("Error while sending email to {}, {}", recipient, e.getLocalizedMessage());
         }
     }
+
+    public void notifyOrgVerificationSuccess(String email) {
+
+    }
 }

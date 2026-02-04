@@ -1,6 +1,6 @@
 package com.backend.givr.organization.entity;
 
-import com.backend.givr.shared.Location;
+import com.backend.givr.shared.entity.Location;
 import com.backend.givr.shared.enums.ProjectStatus;
 import com.backend.givr.shared.enums.VerificationStatus;
 import jakarta.persistence.*;

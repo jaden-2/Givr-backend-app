@@ -1,4 +1,4 @@
-package com.backend.givr.shared;
+package com.backend.givr.shared.entity;
 
 import com.backend.givr.organization.dtos.LocationDto;
 import jakarta.persistence.*;

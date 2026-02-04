@@ -2,12 +2,14 @@ package com.backend.givr.organization.service;
 
 import com.backend.givr.organization.dtos.*;
 import com.backend.givr.organization.entity.Organization;
+import com.backend.givr.organization.entity.OrganizationVerificationSession;
 import com.backend.givr.organization.entity.Project;
 import com.backend.givr.organization.mappings.OrganizationMapper;
 import com.backend.givr.organization.repo.OrganizationRepo;
+import com.backend.givr.organization.repo.OrganizationVerificationSessionRepo;
 import com.backend.givr.organization.security.OrganizationDetails;
 import com.backend.givr.organization.security.OrganizationDetailsService;
-import com.backend.givr.shared.Location;
+import com.backend.givr.shared.entity.Location;
 import com.backend.givr.shared.dtos.PasswordUpdateDto;
 import com.backend.givr.shared.dtos.VolunteerApplicationDto;
 import com.backend.givr.shared.email.EmailService;
@@ -24,6 +26,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,6 +45,8 @@ public class OrganizationService {
     private ProjectMapper projectMapper;
     @Autowired
     private OrganizationRepo repo;
+    @Autowired
+    private VerificationService verificationService;
     @Autowired
     private OrganizationDetailsService service;
     @Autowired
@@ -215,7 +220,7 @@ public class OrganizationService {
 
     public OrganizationProfileDto getOrganizationProfile(SecurityDetails details) {
         Organization organization = em.getReference(Organization.class, details.getId());
-        return toProfile(organization, details);
+        return toProfile(organization, details, null);
     }
 
     @Transactional
@@ -226,21 +231,30 @@ public class OrganizationService {
             organization.setEmailVerified(false);
             service.updateEmail(organizationDto.getEmail(), details.getUsername());
         }
-
         mapper.updateOrganization(organizationDto, organization);
-        Location location = locationService.createLocation(organizationDto.getLocation());
-        organization.setLocation(location);
-        organization.setProfileCompleted(orgProfileComplete(organization));
-
-        return toProfile(organization, details);
+        // Creates a verification session when organization profile information is being updated
+        // By creating a verification session, we require the user to make a payment,
+        // Hence this generates a checkout url for the user
+        try {
+            String checkoutUrl = verificationService.createVerificationSession(organization, organizationDto, details.getUsername());
+            return toProfile(organization, details, checkoutUrl);
+        } catch (BadRequestException e) {
+            // Should be handled properly
+            throw new RuntimeException(e);
+        }
     }
 
-    private OrganizationProfileDto toProfile(Organization organization, SecurityDetails details){
+
+
+    private OrganizationProfileDto toProfile(Organization organization, SecurityDetails details, String checkoutUrl){
         OrganizationDto orgDto = mapper.toOrganizationDto(organization);
+
+        if(organization.getStatus() == VerificationStatus.PENDING)
+            orgDto = mapper.toOrganizationDto(verificationService.findByOrganization(organization));
         OrganizationContactDto orgContact = mapper.toOrganizationContact(organization);
         orgContact.setEmail(details.getUsername());
         orgContact.setEmailEditable(details.getProviderType() == AuthProviderType.LOCAL);
-        return new OrganizationProfileDto(orgContact, orgDto);
+        return new OrganizationProfileDto(orgContact, orgDto, null);
     }
 
     @Transactional
@@ -252,5 +266,10 @@ public class OrganizationService {
 
     public EmailExists emailExists(String email, SecurityDetails details) {
         return new EmailExists(email, !Objects.equals(email, details.getUsername()) && service.emailExist(email));
+    }
+
+    @Async
+    public void verifyAccount(){
+
     }
 }
