@@ -1,4 +1,4 @@
-package com.backend.givr.shared.notification;
+package com.backend.givr.shared.email;
 
 import com.backend.givr.shared.enums.AccountType;
 import com.backend.givr.shared.enums.OtpPurpose;
