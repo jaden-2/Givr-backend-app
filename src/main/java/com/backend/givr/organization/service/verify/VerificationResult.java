@@ -1,5 +1,7 @@
 package com.backend.givr.organization.service.verify;
 
+import com.backend.givr.shared.enums.ReviewStatus;
+import com.backend.givr.shared.enums.VerificationStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +18,7 @@ public class VerificationResult {
     private double nameSimilarity;
     private double addressSimilarity;
     private double confidenceScore;
-    private OrganizationVerifier.VerificationStatus verificationStatus;
+    private ReviewStatus verificationStatus;
     private List<String> messages = new ArrayList<>();
     // Getters and setters
     public void addMessage(String message) {

@@ -1,5 +1,6 @@
 package com.backend.givr.organization.dtos;
 
+import com.backend.givr.shared.enums.ReviewStatus;
 import com.backend.givr.shared.enums.VerificationStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -35,4 +36,5 @@ public class OrganizationDto {
     private String description;
     private String website;
     private String address;
+    private ReviewStatus reviewStatus;
 }

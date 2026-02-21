@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.URL;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,16 +41,16 @@ public class Volunteer {
     private Set<Skill> skills = new HashSet<>();
 
     private Boolean profileCompleted;
-    private ZonedDateTime createdAt;
-    private ZonedDateTime updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     @PrePersist
     private void setCreatedAt(){
-        this.createdAt = ZonedDateTime.now();
+        this.createdAt = LocalDateTime.now(ZoneId.of("Africa/Lagos"));
     }
 
     @PreUpdate
     private void setUpdatedAt() {
-        this.updatedAt = ZonedDateTime.now();
+        this.updatedAt = LocalDateTime.now(ZoneId.of("Africa/Lagos"));
     }
 }

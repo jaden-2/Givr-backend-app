@@ -1,12 +1,15 @@
-package com.backend.givr.organization.entity;
+package com.backend.givr.shared.entity;
 
 import com.backend.givr.organization.dtos.OrganizationUpdateDto;
+import com.backend.givr.organization.entity.Organization;
 import com.backend.givr.organization.service.verify.Address;
-import com.backend.givr.shared.entity.Location;
+import com.backend.givr.shared.enums.ReviewStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.URL;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -16,8 +19,6 @@ import java.time.LocalDateTime;
 @Getter
 @Table(uniqueConstraints = @UniqueConstraint(name = "org_reg_unq", columnNames = {"organization_id", "claimed_cac_reg_number"}))
 public class OrganizationVerificationSession {
-    private static final Duration expirationDuration = Duration.ofDays(7);
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long sessionId;
@@ -29,18 +30,28 @@ public class OrganizationVerificationSession {
     @Column(name = "claimed_cac_reg_number")
     private String claimedCACRegNumber;
     private String claimedOrgName;
+    private String claimedType;
+    @Column(nullable = false)
+    @NotBlank
+    @URL
+    private String cacDocUrl;
 
     @Setter
+    private String review;
+    @Setter
+    @ManyToOne
     private Location claimedLocation;
     private Address claimedAddress;
 
-    private LocalDateTime expiresAt;
+    @Enumerated(EnumType.STRING)
+    @Setter
+    private ReviewStatus reviewStatus;
+
 
     private LocalDateTime createdAt;
     @PrePersist
     private void setExpiresAt(){
         this.createdAt = LocalDateTime.now();
-        this.expiresAt = createdAt.plus(expirationDuration);
     }
 
     public OrganizationVerificationSession(Organization organization, OrganizationUpdateDto updateDto){
@@ -48,5 +59,8 @@ public class OrganizationVerificationSession {
         this.claimedAddress = new Address(updateDto.getAddress(), updateDto.getLocation().getLga(), updateDto.getLocation().getState());
         this.claimedOrgName = updateDto.getName();
         this.claimedCACRegNumber = updateDto.getCacRegNumber();
+        this.reviewStatus = ReviewStatus.Pending;
+        this.claimedType = updateDto.getCategory().getFirst();
+        this.cacDocUrl = updateDto.getCacDocUrl();
     }
 }

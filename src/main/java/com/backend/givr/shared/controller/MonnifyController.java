@@ -15,7 +15,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.Formatter;
 
-@RestController
 @RequestMapping("/v1/api/webhook/monnify")
 public class MonnifyController {
     private static final String HMACSHA532 = "HmacSHA512";

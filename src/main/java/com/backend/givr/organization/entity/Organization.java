@@ -30,8 +30,9 @@ public class Organization {
     private String contactFirstname;
 
     private String contactMiddleName;
-    @NotBlank
-    @Column(nullable = false)
+
+//    @NotBlank
+//    @Column(nullable = false)
     private String contactLastname;
 
     private String phoneNumber;

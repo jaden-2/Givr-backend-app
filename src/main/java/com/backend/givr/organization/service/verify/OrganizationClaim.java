@@ -1,8 +1,7 @@
 package com.backend.givr.organization.service.verify;
 
-import com.backend.givr.organization.entity.OrganizationVerificationSession;
+import com.backend.givr.shared.entity.OrganizationVerificationSession;
 import lombok.Getter;
-import lombok.Setter;
 
 // Mock data classes
 @Getter

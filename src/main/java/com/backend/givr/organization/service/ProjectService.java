@@ -115,12 +115,15 @@ public class ProjectService {
     public void updateProjectStatusOnDeadline(){
         LocalDate today = LocalDate.now(ZoneId.of("Africa/Lagos"));
         List<Project> projects = repo.findExpiredProjects(today);
-
+        List<Project> reviewableProjects = repo.findClosingProjects(today.plusDays(1));
         projects.forEach(project -> {
             if(project.shouldClose(today.atStartOfDay()))
                 project.closeApplication();
         });
+
+        reviewableProjects.forEach(project -> project.setReviewable(true));
     }
+
 
     public List<Project> getVolunteerRecommendedProjects(Volunteer volunteer, ProjectStatus status){
         return repo.findProjectsWithAnyMatchingSkill(volunteer, volunteer.getLocation().getState(),status);

@@ -18,7 +18,9 @@ public class CACResponse {
     @Embeddable
     @Getter
     public static class Status{
-        String state; String status;
+        @Column(name = "status_state")
+        String state;
+        String status;
     }
 
     @Embeddable

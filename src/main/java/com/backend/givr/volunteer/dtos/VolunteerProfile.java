@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
@@ -27,5 +29,5 @@ public class VolunteerProfile {
     private boolean emailEditable;
     private boolean emailIsVerified;
     private boolean phoneIsVerified;
-
+    private LocalDateTime createdAt;
 }

@@ -2,9 +2,8 @@ package com.backend.givr.organization.mappings;
 
 import com.backend.givr.organization.dtos.*;
 import com.backend.givr.organization.entity.Organization;
-import com.backend.givr.organization.entity.OrganizationVerificationSession;
+import com.backend.givr.shared.entity.OrganizationVerificationSession;
 import com.backend.givr.organization.entity.Project;
-import com.backend.givr.organization.service.verify.OrganizationClaim;
 import com.backend.givr.shared.entity.Location;
 import com.backend.givr.shared.entity.Skill;
 import com.backend.givr.shared.mapper.SkillMapper;
@@ -17,8 +16,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {VolunteerMapper.class, SkillMapper.class}, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring", uses = {VolunteerMapper.class, SkillMapper.class, }, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface OrganizationMapper {
 
     Organization toOrganization(CreateOrganizationDto organizationDto);
@@ -42,7 +42,7 @@ public interface OrganizationMapper {
         organizationDto.setAddress(verificationSession.getClaimedAddress().address());
         LocationDto locationDto = new LocationDto();
         locationDto.setLga(verificationSession.getClaimedAddress().LGA());
-        locationDto.setState(verificationSession.getClaimedAddress().State());
+        locationDto.setState(verificationSession.getClaimedAddress().state());
         organizationDto.setLocation(locationDto);
     }
 
@@ -62,6 +62,7 @@ public interface OrganizationMapper {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         return format.parse(date);
     }
+
     default Set<Skill> toSet(List<Skill> skills){
         return Set.copyOf(skills);
     }
@@ -83,4 +84,5 @@ public interface OrganizationMapper {
         if(organizationUpdateDto.getCategory() != null)
             organization.setOrganizationType(organizationUpdateDto.getCategory().getFirst());
     }
+
 }

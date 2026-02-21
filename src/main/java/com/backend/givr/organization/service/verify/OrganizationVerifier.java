@@ -1,5 +1,6 @@
 package com.backend.givr.organization.service.verify;
 
+import com.backend.givr.shared.enums.ReviewStatus;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.text.similarity.LevenshteinDistance;
@@ -228,8 +229,8 @@ public class OrganizationVerifier {
 
         double lgaSimilarity = calculateSimilarity(normalizedLgaClaimed, normalizedLgaOfficial);
 
-        String normalizedStateClaimed = normalizeForComparison(claimedAddress.State());
-        String normalizedStateOfficial = normalizeForComparison(officialAddress.State());
+        String normalizedStateClaimed = normalizeForComparison(claimedAddress.state());
+        String normalizedStateOfficial = normalizeForComparison(officialAddress.state());
 
         double stateSimilarity = calculateSimilarity(normalizedStateClaimed, normalizedStateOfficial);
 
@@ -330,7 +331,7 @@ public class OrganizationVerifier {
 
         if (!cacMatch) {
             result.setOverallVerified(false);
-            result.setVerificationStatus(VerificationStatus.REJECTED);
+            result.setVerificationStatus(ReviewStatus.Rejected);
             result.addMessage("CAC registration number does not match");
             return result;
         }
@@ -356,15 +357,14 @@ public class OrganizationVerifier {
         // 4. Determine overall status
         if (nameResult.getMatch() && addressResult.isMatch()) {
             result.setOverallVerified(true);
-            result.setVerificationStatus(VerificationStatus.VERIFIED);
+            result.setVerificationStatus(ReviewStatus.Approved);
         } else if (nameResult.getSimilarity() >= 70.0 && addressResult.isMatch()) {
             // Borderline case - flag for manual review
             result.setOverallVerified(false);
-            result.setVerificationStatus(VerificationStatus.NEEDS_REVIEW);
             result.addMessage("Flagged for manual review: Name similarity is borderline");
         } else {
             result.setOverallVerified(false);
-            result.setVerificationStatus(VerificationStatus.REJECTED);
+            result.setVerificationStatus(ReviewStatus.Rejected);
         }
 
         // Calculate confidence score (0-100)
@@ -412,13 +412,6 @@ public class OrganizationVerifier {
         // Getters and setters
     }
 
-
-    public enum VerificationStatus {
-        PENDING,
-        VERIFIED,
-        NEEDS_REVIEW,
-        REJECTED
-    }
 
     // Example test
     public static void main(String[] args) {

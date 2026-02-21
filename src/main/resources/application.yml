@@ -46,6 +46,7 @@ spring:
 givr:
   allowed:
     origins: ${ALLOWED_ORIGINS}
+    admins: ${ALLOWED_ADMINS}
   monnify:
     api:
       key: ${MONNIFY_API_KEY}
