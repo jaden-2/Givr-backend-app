@@ -53,7 +53,8 @@ public class Project {
     private LocalDate endDate;
     @Column(nullable = false)
     private LocalDate deadline;
-
+    @Column(nullable = false)
+    private String address;
     @Transient
     private Boolean reviewable;
     @Embedded
