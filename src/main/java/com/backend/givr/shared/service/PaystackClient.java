@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,7 @@ public class PaystackClient implements PaymentMerchant {
     @Override
     public String initializePayment( String email, VerificationPayment verificationPayment) {
         Map<String, Object> payload = Map.of(
-                "amount", verificationPayment.getAmount(),
+                "amount", verificationPayment.getAmount().multiply(BigDecimal.valueOf(100)),
                 "email", email,
                 "channels", List.of("card", "bank", "ussd", "bank_transfer"),
                 "currency", "NGN"
