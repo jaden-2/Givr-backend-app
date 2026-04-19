@@ -1,6 +1,5 @@
 package com.backend.givr.volunteer.controllers;
 
-import com.backend.givr.organization.dtos.OrganizationDto;
 import com.backend.givr.organization.dtos.ProjectResponseDto;
 import com.backend.givr.organization.service.OrganizationService;
 import com.backend.givr.organization.service.ParticipationService;
