@@ -12,6 +12,7 @@ import com.backend.givr.shared.dtos.RatingDTO;
 import com.backend.givr.shared.enums.OtpPurpose;
 import com.backend.givr.shared.interfaces.SecurityDetails;
 import com.backend.givr.shared.enums.AuthProviderType;
+import com.backend.givr.shared.mapper.ProjectMapper;
 import com.backend.givr.shared.otp.OtpDto;
 import com.backend.givr.shared.service.LogoutService;
 import com.backend.givr.volunteer.dtos.*;
@@ -37,6 +38,8 @@ public class VolunteerController {
     private OrganizationService organizationService;
     @Autowired
     private ParticipationService participationService;
+    @Autowired
+    private ProjectMapper projectMapper;
     @Autowired
     private LogoutService logoutService;
     @Autowired
@@ -69,6 +72,14 @@ public class VolunteerController {
     }
 
 
+    @GetMapping("/share/project/{id}")
+    public ResponseEntity<String> shareProject(@PathVariable("id") Long projectId){
+        return ResponseEntity.ok(service.shareProject(projectId));
+    }
+    @GetMapping("/projects/{id}")
+    public ResponseEntity<ProjectResponseDto> getProject(@PathVariable("id") Long projectId){
+        return ResponseEntity.ok(projectMapper.toProjectDto(projectService.getProject(projectId)));
+    }
     @PostMapping("/projects/apply")
     public ResponseEntity<Void> applyForProject(@AuthenticationPrincipal VolunteerDetails volunteerDetails, @RequestBody @Valid ProjectApplicationForm applicationForm){
         service.apply(volunteerDetails, applicationForm);
