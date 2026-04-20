@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta property="og:title" th:content="${projectTitle}" />
     <meta property="og:description" th:content="${projectDescription}" />
-    <meta property="og:image" th:content="${projectTitle}" />
-    <meta property="og:url" th:content="@{${projectCardUrl}}" />
+    <meta property="og:image" th:content="@{${projectCardUrl}}" />
+    <meta property="og:url" th:content="@{${projectUrl}}" />
     <meta property="og:type" th:content="website" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" th:content="${projectTitle}" />
-    <meta name="twitter:description" th:content="${projectTitle}" />
+    <meta name="twitter:description" th:content="${projectDescription}" />
     <meta name="twitter:image" th:content="@{${projectCardUrl}}" />
+    <meta name="twitter:url" th:content="@{${projectUrl}}" />
     <title>Project</title>
 
 </head>
