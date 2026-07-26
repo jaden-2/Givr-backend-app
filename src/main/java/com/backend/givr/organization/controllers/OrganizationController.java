@@ -4,6 +4,7 @@ import com.backend.givr.organization.dtos.*;
 
 import com.backend.givr.organization.service.ApplicationService;
 import com.backend.givr.organization.service.OrganizationService;
+import com.backend.givr.organization.service.ParticipationService;
 import com.backend.givr.shared.dtos.ParticipationDto;
 import com.backend.givr.shared.dtos.PasswordUpdateDto;
 import com.backend.givr.shared.dtos.VolunteerApplicationDto;
@@ -43,12 +44,15 @@ public class OrganizationController {
 
     @Autowired
     private OrganizationService service;
+    @Autowired
+    private ParticipationService participationService;
 
     @Autowired
     private LogoutService logoutService;
 
     @Autowired
     private GivrMessageService messageService;
+
     @PostMapping("/auth/signup")
     public ResponseEntity<Void> createOrganizationAccount(@RequestBody @Valid CreateOrganizationDto createOrganizationDto){
         service.createOrganization(createOrganizationDto);
@@ -124,6 +128,12 @@ public class OrganizationController {
     @PatchMapping("/projects/{projectId}")
     public ResponseEntity<ProjectResponseDto> updateProject(@PathVariable("projectId") Long projectId, @RequestBody ProjectRequestDto projectRequestDto){
         return ResponseEntity.accepted().body(service.updateProject(projectId, projectRequestDto));
+    }
+
+    @PatchMapping("/projects/{projectId}/completed")
+    public ResponseEntity<Void> markProjectCompleted(@PathVariable("projectId") Long projectId){
+        participationService.markProjectCompleted(projectId);
+        return ResponseEntity.accepted().build();
     }
 
     @GetMapping("/chat/{projectId}/history")

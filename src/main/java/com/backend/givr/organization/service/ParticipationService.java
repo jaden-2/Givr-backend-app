@@ -7,11 +7,14 @@ import com.backend.givr.organization.entity.ProjectApplication;
 import com.backend.givr.organization.repo.ParticipationRepo;
 import com.backend.givr.organization.repo.ProjectApplicationRepo;
 import com.backend.givr.redis.RedisService;
+import com.backend.givr.shared.dtos.ParticipationDto;
 import com.backend.givr.shared.dtos.RatingDTO;
 import com.backend.givr.shared.enums.ApplicationStatus;
+import com.backend.givr.shared.enums.CertificationStatus;
 import com.backend.givr.shared.enums.ParticipationStatus;
 import com.backend.givr.shared.exceptions.IllegalOperationException;
 import com.backend.givr.shared.email.EmailService;
+import com.backend.givr.shared.mapper.ProjectMapper;
 import com.backend.givr.shared.service.RatingService;
 import com.backend.givr.volunteer.entity.Volunteer;
 import com.backend.givr.volunteer.security.VolunteerDetailsService;
@@ -25,11 +28,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.web.PagedModel;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +52,8 @@ public class ParticipationService {
     @Autowired
     private ProjectApplicationRepo applicationRepo;
     @Autowired
+    private ProjectService projectService;
+    @Autowired
     private VolunteerDetailsService detailsService;
     @Autowired
     private EmailService emailService;
@@ -51,6 +63,8 @@ public class ParticipationService {
     private RedisService redisService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private ProjectMapper mapper;
     @Autowired
     private EntityManager em;
 
@@ -110,6 +124,8 @@ public class ParticipationService {
         if(participation.getParticipationStatus() == status)
             return;
 
+        if(status == ParticipationStatus.COMPLETED)
+            participation.setCertificationStatus(CertificationStatus.Pending);
         participation.setParticipationStatus(status);
 
         // Send notification to volunteer
@@ -124,6 +140,27 @@ public class ParticipationService {
                 log.error("Failed to removed contact from segment, {}", e.getLocalizedMessage());
             }
         }
+    }
+
+    @Async
+    @Transactional
+    public void markProjectCompleted(Long projectId) {
+        Project project = projectService.findProjectById(projectId);
+        Flux<Participation> participationList = Flux.fromIterable(getParticipationByProject(project));
+
+        participationList.parallel().doOnNext(p->{
+                    p.setParticipationStatus(ParticipationStatus.COMPLETED);
+                })
+                .sequential()
+                .delayElements(Duration.ofMillis(200))
+                .doOnNext(p->{
+                    emailService.sendParticipationUpdate(p.getVolunteer(), project, ParticipationStatus.COMPLETED);
+                }).doOnError(err->{
+                    log.error("An error occurred while updating participation status {}", err.getLocalizedMessage());
+                })
+                .doOnComplete(()->log.info("Participant has been notified"))
+                .subscribe();
+
     }
 
     public void deleteVolunteerParticipation(Long participationId, Volunteer volunteer){
@@ -148,5 +185,14 @@ public class ParticipationService {
     public void createRating(Long participationId, Volunteer volunteer, RatingDTO ratingDTO) {
         Optional<Participation> participation = repo.findByIdAndVolunteer(participationId, volunteer);
         participation.ifPresent(part-> ratingService.addOrUpdateRating(volunteer, part.getProject().getProjectId(), ratingDTO.rating()));
+    }
+
+    public PagedModel<ParticipationDto> findParticipantsPendingCertification(int pageNum, int pageSize){
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by("updatedAt").descending());
+        Page<Participation> participation = repo.findAllByCertificationStatus(CertificationStatus.Pending, pageable);
+        if(participation.isEmpty())
+            participation = repo.findAllByCertificationStatus(null, pageable);
+
+        return new PagedModel<>(participation.map(mapper::toParticipationDto));
     }
 }
