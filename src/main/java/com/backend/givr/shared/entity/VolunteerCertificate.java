@@ -19,8 +19,10 @@ public class VolunteerCertificate {
     @Setter
     private String certUrl;
     @ManyToOne
+    @JoinColumn(name = "project_id")
     private final Project project;
     @ManyToOne
+    @JoinColumn(name = "volunteer_id")
     private final Volunteer certifiedVolunteer;
 
     private ZonedDateTime issuedAt;

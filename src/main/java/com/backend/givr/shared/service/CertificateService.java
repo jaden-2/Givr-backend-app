@@ -51,6 +51,7 @@ public class CertificateService {
             certificate.setCertUrl(shareableLink);
             repo.save(certificate);
             participant.setCertificationStatus(CertificationStatus.Certified);
+            emailService.sendCertificateReadyNotification(participant.getVolunteer(), participant.getProject());
             log.info("Certificate certId:{} has been successfully issued to participant {}", certificate.getCertId(),participantId);
         }catch (RuntimeException e){
             log.error("Failed to issue certificate to participant: {} because {}", participant.getId(), e.getLocalizedMessage());

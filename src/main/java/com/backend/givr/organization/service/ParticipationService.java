@@ -12,6 +12,7 @@ import com.backend.givr.shared.dtos.RatingDTO;
 import com.backend.givr.shared.enums.ApplicationStatus;
 import com.backend.givr.shared.enums.CertificationStatus;
 import com.backend.givr.shared.enums.ParticipationStatus;
+import com.backend.givr.shared.enums.ProjectStatus;
 import com.backend.givr.shared.exceptions.IllegalOperationException;
 import com.backend.givr.shared.email.EmailService;
 import com.backend.givr.shared.mapper.ProjectMapper;
@@ -146,6 +147,7 @@ public class ParticipationService {
     @Transactional
     public void markProjectCompleted(Long projectId) {
         Project project = projectService.findProjectById(projectId);
+        project.setStatus(ProjectStatus.COMPLETED);
         Flux<Participation> participationList = Flux.fromIterable(getParticipationByProject(project));
 
         participationList.parallel().doOnNext(p->{
