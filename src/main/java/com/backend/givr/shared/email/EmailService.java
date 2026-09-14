@@ -42,6 +42,8 @@ public class EmailService {
     @Value("${givr.allowed.admins}")
     private List<String> admins;
 
+    @Value("${app.email-subject}")
+    private String emailSubject;
     @Autowired
     private OTPService otpService;
 
@@ -152,10 +154,12 @@ public class EmailService {
         sendEmail(html, volunteer.getEmail(), subject );
     }
 
+
     public void sendCertificateReadyNotification(Volunteer volunteer, Project project){
         String html = emailTemplateService.certificateReady(volunteer.getFirstname(), project.getTitle(), project.getOrganization().getOrganizationName());
         sendEmail(html, volunteer.getEmail(), "Congratulations! Your certificate is now available.🎉");
     }
+
     private void updateGivrAdmin(Project project, Volunteer volunteer){
         String fullName = String.format("%S, %s", volunteer.getLastname(), volunteer.getFirstname());
         String html = emailTemplateService.projectCompleteAdminUpdate(volunteer.getEmail(), project.getTitle(), fullName);
@@ -251,6 +255,6 @@ public class EmailService {
     }
     public void sendNotification(String firstname, String recipient){
         String html = emailTemplateService.sendNotification(firstname);
-        sendEmail(html, recipient, "You're not a volunteer yet");
+        sendEmail(html, recipient, emailSubject);
     }
 }

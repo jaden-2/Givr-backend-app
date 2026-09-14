@@ -125,8 +125,10 @@ public class ParticipationService {
         if(participation.getParticipationStatus() == status)
             return;
 
-        if(status == ParticipationStatus.COMPLETED)
+        if(status == ParticipationStatus.COMPLETED) {
             participation.setCertificationStatus(CertificationStatus.Pending);
+            participation.setParticipationStatus(ParticipationStatus.COMPLETED);
+        }
         participation.setParticipationStatus(status);
 
         // Send notification to volunteer
@@ -148,6 +150,8 @@ public class ParticipationService {
 
         participationList.parallel().doOnNext(p->{
                     p.setParticipationStatus(ParticipationStatus.COMPLETED);
+                    p.setCertificationStatus(CertificationStatus.Pending);
+                    repo.save(p);
                 })
                 .sequential()
                 .delayElements(Duration.ofMillis(200))
@@ -158,7 +162,6 @@ public class ParticipationService {
                 })
                 .doOnComplete(()->log.info("Participant has been notified"))
                 .subscribe();
-
     }
 
     public void deleteVolunteerParticipation(Long participationId, Volunteer volunteer){
@@ -187,9 +190,9 @@ public class ParticipationService {
 
     public PagedModel<ParticipationDto> findParticipantsPendingCertification(int pageNum, int pageSize){
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by("updatedAt").descending());
-        Page<Participation> participation = repo.findAllByCertificationStatus(CertificationStatus.Pending, pageable);
+        Page<Participation> participation = repo.findAllByCertificationStatusAndParticipationStatus(CertificationStatus.Pending,ParticipationStatus.COMPLETED, pageable);
         if(participation.isEmpty())
-            participation = repo.findAllByCertificationStatus(null, pageable);
+            participation = repo.findAllByCertificationStatusAndParticipationStatus(null, ParticipationStatus.COMPLETED, pageable);
 
         return new PagedModel<>(participation.map(mapper::toParticipationDto));
     }
