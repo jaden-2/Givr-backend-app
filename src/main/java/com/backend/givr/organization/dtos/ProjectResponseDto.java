@@ -2,6 +2,7 @@ package com.backend.givr.organization.dtos;
 
 import com.backend.givr.organization.entity.AttendanceHours;
 import com.backend.givr.shared.enums.ProjectStatus;
+import com.backend.givr.shared.enums.ProjectType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import jakarta.validation.constraints.Min;
@@ -40,4 +41,5 @@ public class ProjectResponseDto {
     private double rating;
     private String projectFlierUrl;
     private String projectCardUrl;
+    private ProjectType type;
 }
