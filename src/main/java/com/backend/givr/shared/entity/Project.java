@@ -105,7 +105,7 @@ public class Project {
     private String shareableLink;
     private ZonedDateTime createdAt;
     private ZonedDateTime modifiedAt;
-
+    @Enumerated(EnumType.STRING)
     private ProjectType type;
     @PrePersist
     private void setCreatedAt(){

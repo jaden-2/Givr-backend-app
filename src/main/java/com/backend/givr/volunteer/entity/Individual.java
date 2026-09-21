@@ -22,6 +22,7 @@ public class Individual {
     private String lastname;
     private String middleName;
     private String logo;
+    @Enumerated(EnumType.STRING)
     private VerificationStatus status;
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
